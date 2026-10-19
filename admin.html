@@ -123,6 +123,12 @@
   .badge.Released { background: var(--released-bg); color: var(--released-ink); }
   .badge.Rejected { background: var(--rejected-bg); color: var(--rejected-ink); }
   .side label { margin: 0 0 4px; }
+  .print-btn {
+    margin-top: 10px; width: 100%; padding: 9px; border: 1.5px solid var(--brand);
+    background: #fff; color: var(--brand); border-radius: 8px;
+    font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .print-btn:hover { background: var(--brand-soft); }
   .empty { color: var(--muted); text-align: center; padding: 36px 8px; border: 1.5px dashed var(--line); border-radius: 10px; }
 
   @media (max-width: 760px) {
@@ -212,6 +218,7 @@
   import {
     getFirestore, doc, getDoc, updateDoc, collection, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+  import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/+esm";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBuGSvWeiQmgbG6vHt1QQou-c43c1t926g",
@@ -225,6 +232,114 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+
+  // ====== EMAIL SA RESIDENTE (EmailJS) ======
+  // Gamitin ang parehong Public Key at Service ID, pero BAGONG Template ID (para sa residente).
+  const EMAILJS_PUBLIC_KEY = "tK6EZiFcBZ2cdw-IF";
+  const EMAILJS_SERVICE_ID = "service_kd1iw66";
+  const EMAILJS_RESIDENT_TEMPLATE_ID = "template_1twy2df";
+  // ===========================================
+
+  function statusMessage(r, status) {
+    if (status === "Approved") {
+      return r.type === "Appointment"
+        ? "Naaprubahan na ang iyong appointment sa " + r.appointmentDate + ", " + r.appointmentTime + ". Pumunta sa barangay hall sa oras na iyon."
+        : "Naaprubahan na ang iyong request. Hintayin ang abiso kung kailan ito pwedeng kunin.";
+    }
+    if (status === "Released") {
+      return "Handa na ang iyong request. Pwede mo na itong kunin sa barangay hall.";
+    }
+    if (status === "Rejected") {
+      return "Hindi naaprubahan ang iyong request. Makipag-ugnayan sa barangay hall para sa detalye.";
+    }
+    return "";
+  }
+
+  async function notifyResident(r, status) {
+    if (EMAILJS_PUBLIC_KEY === "PALITAN_DITO") return;
+    if (!r.email || status === "Pending") return;
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_RESIDENT_TEMPLATE_ID, {
+        to_email: r.email,
+        resident_name: r.residentName || "Residente",
+        request_type: r.type,
+        status: status,
+        message: statusMessage(r, status)
+      }, { publicKey: EMAILJS_PUBLIC_KEY });
+    } catch (err) {
+      // Hindi nakapagpadala ng email. Nabago pa rin ang status.
+    }
+  }
+
+  // ====== PALITAN ITO para sa certificate ======
+  const BARANGAY_NAME = "Barangay (PANGALAN)";
+  const CITY_PROVINCE = "(Lungsod/Bayan), (Probinsya)";
+  const CAPTAIN_NAME = "(Pangalan ng Punong Barangay)";
+  // =============================================
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function printCertificate(r) {
+    const name = esc(r.residentName || "");
+    const address = esc(r.address || "");
+    const purpose = esc(r.purpose || "");
+    const today = new Date().toLocaleDateString("fil-PH", { year: "numeric", month: "long", day: "numeric" });
+
+    let title = "";
+    let body = "";
+    if (r.type === "Barangay Clearance") {
+      title = "BARANGAY CLEARANCE";
+      body = "Ito ay nagpapatunay na si <b>" + name + "</b>, naninirahan sa " + address +
+        ", ay isang residente ng barangay na ito at walang naitalang negatibong rekord sa aming tanggapan sa araw na ito. " +
+        "Ang clearance na ito ay inilalabas para sa layuning: <b>" + purpose + "</b>.";
+    } else if (r.type === "Certificate of Indigency") {
+      title = "CERTIFICATE OF INDIGENCY";
+      body = "Ito ay nagpapatunay na si <b>" + name + "</b>, naninirahan sa " + address +
+        ", ay isang residente ng barangay na ito at kabilang sa mga mahihirap na pamilya sa aming komunidad. " +
+        "Ang sertipikong ito ay inilalabas para sa layuning: <b>" + purpose + "</b>.";
+    } else {
+      title = "CERTIFICATE OF RESIDENCY";
+      body = "Ito ay nagpapatunay na si <b>" + name + "</b> ay totoong naninirahan sa " + address +
+        " sa loob ng nasasakupan ng barangay na ito. " +
+        "Ang sertipikong ito ay inilalabas para sa layuning: <b>" + purpose + "</b>.";
+    }
+
+    const html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>" + title + "</title>" +
+      "<style>" +
+      "@page { size: A4; margin: 20mm; }" +
+      "body { font-family: 'Times New Roman', Times, serif; color: #000; line-height: 1.7; }" +
+      ".head { text-align: center; border-bottom: 3px double #000; padding-bottom: 12px; margin-bottom: 36px; }" +
+      ".head p { margin: 0; font-size: 14px; }" +
+      ".head h1 { margin: 4px 0; font-size: 22px; }" +
+      "h2 { text-align: center; font-size: 24px; letter-spacing: 2px; margin: 0 0 32px; }" +
+      "p.body { text-align: justify; text-indent: 48px; font-size: 17px; }" +
+      ".date { margin-top: 28px; font-size: 17px; }" +
+      ".sign { margin-top: 90px; text-align: right; }" +
+      ".sign .line { display: inline-block; min-width: 260px; border-top: 1px solid #000; text-align: center; padding-top: 4px; font-weight: bold; }" +
+      ".sign small { display: block; text-align: center; }" +
+      "</style></head><body>" +
+      "<div class='head'><p>Republika ng Pilipinas</p><p>" + esc(CITY_PROVINCE) + "</p><h1>" + esc(BARANGAY_NAME) + "</h1><p>Tanggapan ng Punong Barangay</p></div>" +
+      "<h2>" + title + "</h2>" +
+      "<p class='body'>" + body + "</p>" +
+      "<p class='date'>Inilabas ngayong " + today + " sa " + esc(BARANGAY_NAME) + ".</p>" +
+      "<div class='sign'><span class='line'>" + esc(CAPTAIN_NAME) + "<small>Punong Barangay</small></span></div>" +
+      "</body></html>";
+
+    const w = window.open("", "_blank");
+    if (!w) {
+      alert("Na-block ang bagong window. Payagan ang pop-ups para sa site na ito.");
+      return;
+    }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 400);
+  }
 
   const $ = (id) => document.getElementById(id);
   const STATUSES = ["Pending", "Approved", "Released", "Rejected"];
@@ -390,6 +505,7 @@
         sel.disabled = true;
         try {
           await updateDoc(doc(db, "requests", r.id), { status: sel.value });
+          notifyResident(r, sel.value);
         } catch (err) {
           alert("Hindi na-update. I-check ang Firestore Rules.");
           sel.value = status;
@@ -399,6 +515,14 @@
       });
       side.appendChild(lab);
       side.appendChild(sel);
+      if (r.type !== "Appointment") {
+        const pb = document.createElement("button");
+        pb.type = "button";
+        pb.className = "print-btn";
+        pb.textContent = "I-print ang certificate";
+        pb.addEventListener("click", () => printCertificate(r));
+        side.appendChild(pb);
+      }
       item.appendChild(side);
 
       list.appendChild(item);

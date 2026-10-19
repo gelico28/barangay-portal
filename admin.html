@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fil">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Panel - Barangay Resident Information System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f5f1e8;
+    --card: #fffdf8;
+    --ink: #1d2b27;
+    --muted: #66746f;
+    --line: #ddd5c3;
+    --brand: #14574a;
+    --brand-dark: #0d3d34;
+    --brand-soft: #e1efe9;
+    --gold: #c8962e;
+    --error: #b3261e;
+    --ok: #14574a;
+    --pending-bg: #fbefd0;  --pending-ink: #7a5600;
+    --approved-bg: #dcefe5; --approved-ink: #14574a;
+    --released-bg: #dde7f6; --released-ink: #1f4a85;
+    --rejected-bg: #f6dcda; --rejected-ink: #8f2019;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Public Sans", "Segoe UI", Tahoma, Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  .hidden { display: none !important; }
+
+  label { display: block; font-size: .86rem; font-weight: 600; margin: 14px 0 5px; }
+  input, select {
+    width: 100%; padding: 11px 12px; border: 1.5px solid var(--line);
+    border-radius: 8px; font: inherit; background: #fff; color: var(--ink);
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible {
+    outline: 3px solid #8cc5b5; outline-offset: 1px;
+  }
+  .btn {
+    width: 100%; margin-top: 22px; padding: 13px; border: 0;
+    background: var(--brand); color: #fff; border-radius: 8px;
+    font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { opacity: .6; cursor: wait; }
+  .btn.ghost {
+    background: transparent; color: #f5f1e8;
+    border: 1.5px solid #8fb8aa; width: auto; margin: 0; padding: 8px 16px;
+  }
+  .btn.ghost:hover { background: #1d6a5b; }
+  .msg { margin-top: 14px; font-size: .9rem; min-height: 1.3em; }
+  .msg.error { color: var(--error); }
+  .msg.ok { color: var(--ok); }
+
+  /* ---------- LOGIN ---------- */
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .login-box {
+    width: 100%; max-width: 400px; background: var(--card);
+    border: 1px solid var(--line); border-top: 6px solid var(--brand);
+    border-radius: 12px; padding: 28px 24px;
+  }
+  .login-box h1 { margin: 0 0 4px; font-size: 1.4rem; }
+  .sub { color: var(--muted); margin: 0 0 6px; font-size: .95rem; }
+
+  /* ---------- PANEL ---------- */
+  .topbar { background: var(--brand); color: #f5f1e8; border-bottom: 4px solid var(--gold); }
+  .topbar-in {
+    max-width: 1080px; margin: 0 auto; padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .topbar strong { font-size: 1.05rem; }
+  .topbar span { color: #bcd8cd; font-size: .88rem; display: block; }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  .toast {
+    background: var(--gold); color: #2b1f00; font-weight: 600;
+    padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .toast button { background: none; border: 0; font: inherit; font-weight: 700; cursor: pointer; color: inherit; text-decoration: underline; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--line);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .stat b { display: block; font-size: 1.6rem; line-height: 1.1; }
+  .stat small { color: var(--muted); }
+  .stat.Pending { border-left-color: var(--gold); }
+  .stat.Approved { border-left-color: #2e8a6f; }
+  .stat.Released { border-left-color: #3a6db5; }
+  .stat.Rejected { border-left-color: var(--error); }
+
+  .tools { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 12px; margin-bottom: 18px; }
+  .tools label { margin: 0 0 4px; }
+
+  .list { display: flex; flex-direction: column; gap: 12px; }
+  .item {
+    background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--line);
+    border-radius: 10px; padding: 14px 16px;
+    display: grid; grid-template-columns: 1fr 190px; gap: 16px; align-items: start;
+  }
+  .item.Pending { border-left-color: var(--gold); }
+  .item.Approved { border-left-color: #2e8a6f; }
+  .item.Released { border-left-color: #3a6db5; }
+  .item.Rejected { border-left-color: var(--error); }
+  .item.fresh { background: #fff6dc; }
+  .item h4 { margin: 0 0 2px; font-size: 1.02rem; }
+  .item p { margin: 3px 0 0; font-size: .88rem; color: var(--muted); }
+  .item p b { color: var(--ink); font-weight: 600; }
+  .badge { display: inline-block; font-size: .76rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; margin-bottom: 8px; }
+  .badge.Pending { background: var(--pending-bg); color: var(--pending-ink); }
+  .badge.Approved { background: var(--approved-bg); color: var(--approved-ink); }
+  .badge.Released { background: var(--released-bg); color: var(--released-ink); }
+  .badge.Rejected { background: var(--rejected-bg); color: var(--rejected-ink); }
+  .side label { margin: 0 0 4px; }
+  .empty { color: var(--muted); text-align: center; padding: 36px 8px; border: 1.5px dashed var(--line); border-radius: 10px; }
+
+  @media (max-width: 760px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+    .tools { grid-template-columns: 1fr; }
+    .item { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginView" class="login-wrap">
+  <div class="login-box">
+    <h1>Staff Panel</h1>
+    <p class="sub">Para sa admin at staff lang ng barangay.</p>
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="email">
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password">
+    <button id="loginBtn" class="btn" type="button">Log in</button>
+    <div id="loginMsg" class="msg" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ================= PANEL ================= -->
+<div id="panelView" class="hidden">
+  <header class="topbar">
+    <div class="topbar-in">
+      <div>
+        <strong id="staffName">Staff</strong>
+        <span id="staffRole"></span>
+      </div>
+      <button id="logoutBtn" class="btn ghost" type="button">Log out</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div id="toast" class="toast hidden" role="status">
+      <span id="toastText"></span>
+      <button id="toastClose" type="button">Isara</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat Pending"><b id="cPending">0</b><small>Pending</small></div>
+      <div class="stat Approved"><b id="cApproved">0</b><small>Approved</small></div>
+      <div class="stat Released"><b id="cReleased">0</b><small>Released</small></div>
+      <div class="stat Rejected"><b id="cRejected">0</b><small>Rejected</small></div>
+    </div>
+
+    <div class="tools">
+      <div>
+        <label for="fStatus">Status</label>
+        <select id="fStatus">
+          <option value="">Lahat</option>
+          <option>Pending</option>
+          <option>Approved</option>
+          <option>Released</option>
+          <option>Rejected</option>
+        </select>
+      </div>
+      <div>
+        <label for="fType">Uri ng request</label>
+        <select id="fType">
+          <option value="">Lahat</option>
+          <option>Barangay Clearance</option>
+          <option>Certificate of Indigency</option>
+          <option>Certificate of Residency</option>
+          <option>Appointment</option>
+        </select>
+      </div>
+      <div>
+        <label for="fSearch">Hanapin (pangalan, address, phone)</label>
+        <input id="fSearch" type="text" placeholder="Mag-type dito...">
+      </div>
+    </div>
+
+    <div id="list" class="list"></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, updateDoc, collection, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBuGSvWeiQmgbG6vHt1QQou-c43c1t926g",
+    authDomain: "barangay-system-83389.firebaseapp.com",
+    projectId: "barangay-system-83389",
+    storageBucket: "barangay-system-83389.firebasestorage.app",
+    messagingSenderId: "707377538631",
+    appId: "1:707377538631:web:4fe59889fb0e91cec53362"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const $ = (id) => document.getElementById(id);
+  const STATUSES = ["Pending", "Approved", "Released", "Rejected"];
+  const BASE_TITLE = document.title;
+
+  let unsub = null;
+  let allRows = [];
+  let firstLoad = true;
+  let newIds = new Set();
+
+  function setMsg(el, text, type) {
+    el.textContent = text;
+    el.className = "msg " + (type || "");
+  }
+
+  /* ---------- Login ---------- */
+  $("loginBtn").addEventListener("click", async () => {
+    const email = $("email").value.trim();
+    const pw = $("password").value;
+    const msg = $("loginMsg");
+    if (!email || !pw) return setMsg(msg, "Ilagay ang email at password.", "error");
+
+    const btn = $("loginBtn");
+    btn.disabled = true;
+    setMsg(msg, "Nilo-log in...");
+    try {
+      await signInWithEmailAndPassword(auth, email, pw);
+      setMsg(msg, "");
+    } catch (err) {
+      setMsg(msg, "Mali ang email o password.", "error");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $("logoutBtn").addEventListener("click", () => signOut(auth));
+
+  /* ---------- Toast ---------- */
+  function beep() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new Ctx();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.frequency.value = 880;
+      g.gain.value = 0.08;
+      o.start();
+      o.stop(ctx.currentTime + 0.18);
+    } catch (e) {
+      // Walang tunog, okay lang.
+    }
+  }
+
+  function showToast(text) {
+    $("toastText").textContent = text;
+    $("toast").classList.remove("hidden");
+    beep();
+  }
+
+  $("toastClose").addEventListener("click", () => {
+    $("toast").classList.add("hidden");
+    newIds.clear();
+    document.title = BASE_TITLE;
+    render();
+  });
+
+  /* ---------- Render ---------- */
+  function ms(ts) {
+    return ts && ts.toMillis ? ts.toMillis() : Date.now();
+  }
+
+  function fmtDate(ts) {
+    if (!ts || !ts.toDate) return "";
+    return ts.toDate().toLocaleString("fil-PH", {
+      year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+    });
+  }
+
+  function line(label, value) {
+    const p = document.createElement("p");
+    const b = document.createElement("b");
+    b.textContent = label + ": ";
+    p.appendChild(b);
+    p.appendChild(document.createTextNode(value));
+    return p;
+  }
+
+  function updateCounts() {
+    STATUSES.forEach((s) => {
+      $("c" + s).textContent = allRows.filter((r) => (r.status || "Pending") === s).length;
+    });
+  }
+
+  function render() {
+    updateCounts();
+
+    const fs = $("fStatus").value;
+    const ft = $("fType").value;
+    const q = $("fSearch").value.trim().toLowerCase();
+
+    const rows = allRows.filter((r) => {
+      const status = r.status || "Pending";
+      if (fs && status !== fs) return false;
+      if (ft && r.type !== ft) return false;
+      if (q) {
+        const hay = ((r.residentName || "") + " " + (r.address || "") + " " + (r.phone || "") + " " + (r.email || "")).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    const list = $("list");
+    list.textContent = "";
+
+    if (rows.length === 0) {
+      const e = document.createElement("div");
+      e.className = "empty";
+      e.textContent = allRows.length === 0 ? "Wala pang request." : "Walang request na tumutugma sa filter.";
+      list.appendChild(e);
+      return;
+    }
+
+    rows.forEach((r) => {
+      const status = r.status || "Pending";
+      const item = document.createElement("div");
+      item.className = "item " + status + (newIds.has(r.id) ? " fresh" : "");
+
+      const main = document.createElement("div");
+      const badge = document.createElement("span");
+      badge.className = "badge " + status;
+      badge.textContent = status;
+      main.appendChild(badge);
+
+      const h = document.createElement("h4");
+      h.textContent = r.type + " - " + (r.residentName || "Walang pangalan");
+      main.appendChild(h);
+
+      if (r.type === "Appointment" && r.appointmentDate) {
+        main.appendChild(line("Iskedyul", r.appointmentDate + ", " + r.appointmentTime));
+      }
+      main.appendChild(line("Dahilan", r.purpose || ""));
+      main.appendChild(line("Phone", r.phone || ""));
+      main.appendChild(line("Address", r.address || ""));
+      main.appendChild(line("Email", r.email || ""));
+      main.appendChild(line("Isinumite", fmtDate(r.createdAt)));
+      item.appendChild(main);
+
+      const side = document.createElement("div");
+      side.className = "side";
+      const lab = document.createElement("label");
+      lab.textContent = "Palitan ang status";
+      const sel = document.createElement("select");
+      STATUSES.forEach((s) => {
+        const o = document.createElement("option");
+        o.value = s;
+        o.textContent = s;
+        if (s === status) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener("change", async () => {
+        sel.disabled = true;
+        try {
+          await updateDoc(doc(db, "requests", r.id), { status: sel.value });
+        } catch (err) {
+          alert("Hindi na-update. I-check ang Firestore Rules.");
+          sel.value = status;
+        } finally {
+          sel.disabled = false;
+        }
+      });
+      side.appendChild(lab);
+      side.appendChild(sel);
+      item.appendChild(side);
+
+      list.appendChild(item);
+    });
+  }
+
+  $("fStatus").addEventListener("change", render);
+  $("fType").addEventListener("change", render);
+  $("fSearch").addEventListener("input", render);
+
+  /* ---------- Live requests ---------- */
+  function startListening() {
+    if (unsub) unsub();
+    firstLoad = true;
+    newIds = new Set();
+    unsub = onSnapshot(collection(db, "requests"), (snap) => {
+      allRows = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
+      allRows.sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
+
+      if (!firstLoad) {
+        let added = 0;
+        snap.docChanges().forEach((c) => {
+          if (c.type === "added" && !c.doc.metadata.hasPendingWrites) {
+            newIds.add(c.doc.id);
+            added++;
+          }
+        });
+        if (added > 0) {
+          showToast(added === 1 ? "May bagong request!" : "May " + added + " bagong request!");
+          document.title = "(" + newIds.size + ") " + BASE_TITLE;
+        }
+      }
+      firstLoad = false;
+      render();
+    }, () => {
+      $("list").textContent = "Hindi nabasa ang mga request. I-check ang Firestore Rules at ang role mo.";
+    });
+  }
+
+  /* ---------- Auth state + role check ---------- */
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      if (unsub) { unsub(); unsub = null; }
+      $("panelView").classList.add("hidden");
+      $("loginView").classList.remove("hidden");
+      return;
+    }
+
+    let profile = null;
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      profile = snap.exists() ? snap.data() : null;
+    } catch (err) {
+      profile = null;
+    }
+
+    if (!profile || (profile.role !== "admin" && profile.role !== "staff")) {
+      setMsg($("loginMsg"), "Walang access ang account na ito. Para sa admin at staff lang.", "error");
+      await signOut(auth);
+      return;
+    }
+
+    $("loginView").classList.add("hidden");
+    $("panelView").classList.remove("hidden");
+    $("staffName").textContent = (profile.firstName || "") + " " + (profile.lastName || "");
+    $("staffRole").textContent = profile.role === "admin" ? "Administrator" : "Staff";
+    startListening();
+  });
+</script>
+</body>
+</html>

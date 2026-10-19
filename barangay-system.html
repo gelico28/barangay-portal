@@ -315,6 +315,7 @@
     getFirestore, doc, setDoc, getDoc, addDoc, collection,
     query, where, onSnapshot, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+  import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/+esm";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBuGSvWeiQmgbG6vHt1QQou-c43c1t926g",
@@ -324,6 +325,30 @@
     messagingSenderId: "707377538631",
     appId: "1:707377538631:web:4fe59889fb0e91cec53362"
   };
+
+  // ====== EMAIL NOTIFICATION (EmailJS) ======
+  // Palitan ng sa inyo (tingnan ang steps). Kapag hindi pa napalitan, hindi magpapadala ng email.
+  const EMAILJS_PUBLIC_KEY = "tK6EZiFcBZ2cdw-IF";
+  const EMAILJS_SERVICE_ID = "service_kd1iw66";
+  const EMAILJS_TEMPLATE_ID = "template_mmcwzsb";
+  // ===========================================
+
+  async function notifyStaff(info) {
+    if (EMAILJS_PUBLIC_KEY === "PALITAN_DITO") return;
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        request_type: info.type,
+        resident_name: info.name,
+        purpose: info.purpose,
+        schedule: info.schedule,
+        phone: info.phone,
+        address: info.address,
+        resident_email: info.email
+      }, { publicKey: EMAILJS_PUBLIC_KEY });
+    } catch (err) {
+      // Hindi nakapagpadala ng email. Nasave pa rin ang request.
+    }
+  }
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -403,7 +428,8 @@
       btn.disabled = false;
     }
   });
-/* ---------- Login ---------- */
+
+  /* ---------- Login ---------- */
   $("loginBtn").addEventListener("click", async () => {
     const email = $("loginEmail").value.trim();
     const pw = $("loginPassword").value;
@@ -513,6 +539,15 @@
         status: "Pending",
         createdAt: serverTimestamp()
       });
+      notifyStaff({
+        type: type,
+        name: ((p.firstName || "") + " " + (p.lastName || "")).trim(),
+        purpose: purpose,
+        schedule: type === "Appointment" ? (date + ", " + time) : "Wala",
+        phone: p.phone || "",
+        address: p.address || "",
+        email: user.email || ""
+      });
       $("reqPurpose").value = "";
       $("apptDate").value = "";
       $("apptTime").value = "";
@@ -607,4 +642,3 @@
 </script>
 </body>
 </html>
-

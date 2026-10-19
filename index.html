@@ -1,1678 +1,317 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay Resident Information System - Desktop Admin Portal</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        navy: {
-                            800: '#1e293b',
-                            900: '#0f172a',
-                            950: '#020617',
-                        },
-                        brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Custom Desktop Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        /* Printable area formatting */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printableReportArea, #printableReportArea * {
-                visibility: visible;
-            }
-            #printableReportArea {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-            }
-            .no-print {
-                display: none !important;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Barangay Resident Information System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f5f9;--card:#fff;--ink:#0f172a;--mut:#64748b;--line:#e2e8f0;--brand:#2563eb;--brand2:#1d4ed8;--soft:#eff6ff;--nav:#0f172a;--err:#dc2626;
+--Pending:#fef3c7;--PendingT:#92400e;--Approved:#d1fae5;--ApprovedT:#065f46;--Released:#dbeafe;--ReleasedT:#1e40af;--Rejected:#fee2e2;--RejectedT:#991b1b}
+[data-theme=dark]{--bg:#020617;--card:#0f172a;--ink:#e2e8f0;--mut:#94a3b8;--line:#1e293b;--brand:#3b82f6;--brand2:#60a5fa;--soft:#172554;--nav:#020617;--err:#f87171;
+--Pending:#422006;--PendingT:#fcd34d;--Approved:#022c22;--ApprovedT:#6ee7b7;--Released:#172554;--ReleasedT:#93c5fd;--Rejected:#450a0a;--RejectedT:#fca5a5}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;min-height:100vh}
+.hidden{display:none!important}
+svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+label{display:block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin:14px 0 6px}
+input,select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;font:inherit;font-size:16px;background:var(--bg);color:var(--ink)}
+textarea{min-height:90px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--brand);outline-offset:1px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;border:0;border-radius:12px;background:var(--brand);color:#fff;font:inherit;font-weight:600;cursor:pointer;width:100%;margin-top:18px}
+.btn:hover{background:var(--brand2)}.btn:disabled{opacity:.6;cursor:wait}
+.btn.sec{background:transparent;color:var(--ink);border:1.5px solid var(--line);width:auto;margin:0;padding:8px 12px}
+.btn.sec:hover{background:var(--soft)}
+.btn.danger{background:var(--err)}
+.msg{min-height:1.3em;margin-top:12px;font-size:.88rem}.msg.e{color:var(--err)}.msg.o{color:var(--brand)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.card h2{margin:0;font-size:1.15rem}.sub{color:var(--mut);font-size:.9rem;margin:2px 0 4px}
+#auth{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.side{background:linear-gradient(145deg,#2563eb,#1e3a8a 70%,#0f172a);color:#fff;padding:56px 48px;display:flex;flex-direction:column;justify-content:space-between}
+.side h1{font-size:2.3rem;line-height:1.15;margin:20px 0 12px;letter-spacing:-.02em}.side p{color:#bfdbfe;max-width:36ch;margin:0}
+.logo{width:48px;height:48px;border-radius:14px;background:#fff;color:#2563eb;display:grid;place-items:center}.logo svg{width:26px;height:26px}
+.pill{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.18);padding:4px 12px;border-radius:99px;margin-left:10px}
+.formwrap{display:flex;align-items:center;justify-content:center;padding:28px 18px}.box{width:100%;max-width:430px}
+.tabs{display:flex;background:var(--line);border-radius:12px;padding:4px;margin:18px 0 4px}
+.tabs button{flex:1;padding:9px;border:0;border-radius:9px;background:none;color:var(--mut);font:inherit;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--card);color:var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.link{background:none;border:0;color:var(--brand);cursor:pointer;font:inherit;font-size:.88rem;padding:0;text-decoration:underline}
+.top{background:var(--nav);color:#fff;border-bottom:3px solid var(--brand)}
+.topin{max-width:1120px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.topin .logo{width:38px;height:38px;border-radius:11px;background:var(--brand);color:#fff}.topin .logo svg{width:20px;height:20px}
+.who{flex:1;min-width:150px}.who b{display:block}.who span{font-size:.8rem;color:#94a3b8}
+.chip{font-size:.7rem;font-weight:700;background:var(--brand);padding:2px 9px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.top .btn.sec{color:#e2e8f0;border-color:#334155}.top .btn.sec:hover{background:#1e293b}
+.wrap{max-width:1120px;margin:0 auto;padding:24px 20px 64px}
+.cols{display:grid;grid-template-columns:1.05fr 1fr;gap:22px;align-items:start}
+.types{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.types label{margin:0;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--ink);cursor:pointer}
+.types input{position:absolute;opacity:0;width:1px;height:1px}
+.types span{display:block;padding:12px;border:1.5px solid var(--line);border-radius:12px;font-weight:600;line-height:1.3}
+.types small{display:block;font-weight:400;color:var(--mut);font-size:.76rem;margin-top:3px}
+.types input:checked+span{border-color:var(--brand);background:var(--soft);color:var(--brand)}
+.types input:focus-visible+span{outline:3px solid var(--brand)}
+.list{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.item{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:1fr;gap:12px}
+.staff .item{grid-template-columns:1fr 210px}
+.item.Pending{border-left-color:#f59e0b}.item.Approved{border-left-color:#10b981}.item.Released{border-left-color:#3b82f6}.item.Rejected{border-left-color:#ef4444}
+.item.fresh{background:var(--soft)}
+.item h4{margin:6px 0 2px;font-size:1rem}.item p{margin:2px 0 0;font-size:.85rem;color:var(--mut)}.item p b{color:var(--ink)}
+.badge{display:inline-block;font-size:.72rem;font-weight:700;padding:3px 11px;border-radius:99px}
+.s-Pending{background:var(--Pending);color:var(--PendingT)}.s-Approved{background:var(--Approved);color:var(--ApprovedT)}.s-Released{background:var(--Released);color:var(--ReleasedT)}.s-Rejected{background:var(--Rejected);color:var(--RejectedT)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}.stat b{display:block;font-size:1.9rem;line-height:1.1}.stat small{color:var(--mut);font-weight:600}
+.tools{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:6px}.tools label{margin-top:0}
+.empty{border:2px dashed var(--line);border-radius:14px;text-align:center;color:var(--mut);padding:34px 10px}
+.pbtn{margin-top:8px;width:100%;padding:9px;border:1.5px solid var(--brand);background:transparent;color:var(--brand);border-radius:10px;font:inherit;font-weight:600;cursor:pointer;display:flex;gap:6px;align-items:center;justify-content:center}
+.pbtn:hover{background:var(--soft)}
+.modal{position:fixed;inset:0;background:rgba(2,6,23,.6);display:flex;align-items:center;justify-content:center;padding:18px;z-index:50}
+.modal .card{max-width:420px;width:100%}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--brand);color:#fff;font-weight:600;padding:12px 20px;border-radius:12px;z-index:60;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:92vw}
+@media(max-width:860px){#auth{grid-template-columns:1fr}.side{padding:26px 22px;gap:18px}.side h1{font-size:1.6rem;margin:12px 0 8px}.cols{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.tools{grid-template-columns:1fr}.staff .item{grid-template-columns:1fr}}
+@media(max-width:480px){.types,.r2{grid-template-columns:1fr}.top .btn.sec span{display:none}}
+</style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-800 antialiased min-h-screen flex flex-col overflow-x-hidden">
-
-    <div id="app" class="flex-1 flex flex-col h-screen overflow-hidden">
-
-        <div id="loginView" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm p-4">
-            <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-slate-200">
-                <!-- Branding Left Banner -->
-                <div class="bg-gradient-to-br from-brand-600 via-brand-700 to-navy-900 p-10 text-white flex flex-col justify-between relative overflow-hidden">
-                    <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
-                    <div class="relative z-10">
-                        <div class="flex items-center space-x-3 mb-8">
-                            <div class="w-12 h-12 bg-white text-brand-600 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-xl">
-                                <i class="fa-solid fa-shield-halved text-brand-600"></i>
-                            </div>
-                            <span class="text-xs font-bold tracking-widest uppercase bg-white/20 px-3 py-1 rounded-full text-blue-50 border border-white/20">Official Portal</span>
-                        </div>
-                        <h1 class="text-3xl font-extrabold mb-3 leading-tight tracking-tight">Barangay Resident Information System</h1>
-                        <p class="text-blue-100 text-sm leading-relaxed">A safer, organized, and more connected community digital management platform.</p>
-                    </div>
-                    <div class="relative z-10 mt-12 pt-6 border-t border-white/10 text-xs text-blue-200/80 flex justify-between items-center">
-                        <span>&copy; 2026 Republic of the Philippines</span>
-                        <span class="text-[10px] bg-white/10 px-2 py-0.5 rounded">v2.4 Desktop</span>
-                    </div>
-                </div>
-
-                <!-- Login Form Right -->
-                <div class="p-10 flex flex-col justify-center bg-white">
-                    <div class="mb-8">
-                        <h2 class="text-2xl font-bold text-slate-900">Welcome Back!</h2>
-                        <p class="text-slate-500 text-xs mt-1">Please login to your account to access the dashboard</p>
-                    </div>
-
-                    <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Email</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-                                    <i class="fa-regular fa-user"></i>
-                                </span>
-                                <input type="text" id="loginUsername" required class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition" placeholder="Enter email">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Password</label>
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-                                    <i class="fa-solid fa-lock"></i>
-                                </span>
-                                <input type="password" id="loginPassword" required class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition" placeholder="Enter password">
-                                <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
-                                    <i class="fa-regular fa-eye" id="passwordEye"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between text-xs text-slate-500 py-1">
-                            <label class="flex items-center space-x-2 cursor-pointer select-none">
-                                <input type="checkbox" checked class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 w-4 h-4">
-                                <span class="text-slate-600 font-medium">Remember me</span>
-                            </label>
-                            <a href="#" onclick="showNotification('Please contact system administrator to reset credentials.', 'info'); return false;" class="text-brand-600 hover:text-brand-700 font-semibold hover:underline">Forgot password?</a>
-                        </div>
-
-                        <button type="submit" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-brand-500/25 active:scale-[0.99] flex items-center justify-center space-x-2">
-                            <span>Sign In to Dashboard</span>
-                            <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div id="mainLayout" class="hidden flex-1 flex h-full overflow-hidden">
-            
-            <!-- Fixed Desktop Sidebar -->
-            <aside class="w-64 bg-navy-900 text-slate-300 flex-shrink-0 flex flex-col border-r border-slate-800 shadow-2xl z-20">
-                <!-- Sidebar Header Branding -->
-                <div class="p-5 border-b border-slate-800/80 flex items-center space-x-3 bg-navy-950/40">
-                    <div class="w-10 h-10 bg-brand-600 text-white rounded-xl flex items-center justify-center font-bold shadow-lg shadow-brand-600/30">
-                        <i class="fa-solid fa-house-chimney text-lg"></i>
-                    </div>
-                    <div class="leading-tight">
-                        <h2 class="text-xs uppercase font-extrabold text-white tracking-wider">Barangay</h2>
-                        <p class="text-[11px] text-slate-400 font-medium">Resident Info System</p>
-                    </div>
-                </div>
-
-                <!-- Navigation Sidebar Links -->
-                <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto">
-                    <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn active w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800/80 hover:text-white">
-                        <i class="fa-solid fa-chart-pie w-5 text-center text-sm"></i>
-                        <span>Dashboard</span>
-                    </button>
-
-                    <button onclick="switchView('requests')" id="nav-requests" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800/80 hover:text-white">
-                        <i class="fa-solid fa-inbox w-5 text-center text-sm"></i>
-                        <span class="flex-1 text-left">Requests</span>
-                        <span id="reqBadge" class="hidden bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
-                    </button>
-
-                    <button onclick="switchView('residents')" id="nav-residents" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800/80 hover:text-white">
-                        <i class="fa-solid fa-users w-5 text-center text-sm"></i>
-                        <span>Resident Records</span>
-                    </button>
-
-                    <button onclick="switchView('search')" id="nav-search" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800/80 hover:text-white">
-                        <i class="fa-solid fa-magnifying-glass w-5 text-center text-sm"></i>
-                        <span>Search</span>
-                    </button>
-
-                    <button onclick="switchView('reports')" id="nav-reports" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800/80 hover:text-white">
-                        <i class="fa-solid fa-file-lines w-5 text-center text-sm"></i>
-                        <span>Reports</span>
-                    </button>
-
-                    <button onclick="switchView('users')" id="nav-users" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800/80 hover:text-white">
-                        <i class="fa-solid fa-user-gear w-5 text-center text-sm"></i>
-                        <span>User Accounts</span>
-                    </button>
-                </nav>
-
-                <!-- Sidebar Footer & User Profile -->
-                <div class="p-3 border-t border-slate-800 bg-navy-950/30">
-                    <button onclick="handleLogout()" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition">
-                        <i class="fa-solid fa-right-from-bracket w-5 text-center"></i>
-                        <span>Log Out</span>
-                    </button>
-                </div>
-            </aside>
-
-            <!-- Main Desktop Content Area -->
-            <div class="flex-1 flex flex-col min-w-0 bg-slate-100 h-full overflow-hidden">
-                
-                <header class="bg-navy-900 text-white px-8 py-4 flex items-center justify-between shadow-md z-10 border-b border-slate-800">
-                    <div class="flex items-center space-x-4">
-                        <h1 id="pageTitle" class="text-xl font-bold tracking-tight text-white">Dashboard</h1>
-                        <span class="text-xs text-slate-400 border-l border-slate-700 pl-4 py-0.5 hidden lg:inline">Overview of the system</span>
-                    </div>
-
-                    <div class="flex items-center space-x-6">
-                        <!-- Search Bar Quick Trigger -->
-                        <div class="relative hidden xl:block w-64">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                            <input type="text" onfocus="switchView('search')" placeholder="Quick search residents..." class="w-full pl-9 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 placeholder-slate-500">
-                        </div>
-
-                        <button onclick="showNotification('No new system alerts', 'info')" class="relative text-slate-300 hover:text-white transition">
-                            <i class="fa-regular fa-bell text-lg"></i>
-                            <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-navy-900"></span>
-                        </button>
-
-                        <div class="flex items-center space-x-3 pl-6 border-l border-slate-800">
-                            <div id="avatarInitials" class="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-brand-500/30">
-                                AA
-                            </div>
-                            <div class="text-left leading-none">
-                                <div id="currentUserName" class="text-xs font-bold text-white">Admin Administrator</div>
-                                <div id="currentUserRole" class="text-[10px] text-slate-400 font-medium mt-1">System Admin</div>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-
-                <main class="flex-1 p-8 overflow-y-auto max-w-7xl w-full mx-auto">
-                    
-                    <!-- ================= DASHBOARD VIEW ================= -->
-                    <div id="view-dashboard" class="view-content space-y-6">
-                        <!-- Stat Cards Grid -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                                <div class="w-14 h-14 bg-blue-50 text-brand-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
-                                    <i class="fa-solid fa-users"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Residents</p>
-                                    <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="statResidents">1,248</h3>
-                                </div>
-                            </div>
-
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                                <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
-                                    <i class="fa-solid fa-house"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Households</p>
-                                    <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="statHouseholds">412</h3>
-                                </div>
-                            </div>
-
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                                <div class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
-                                    <i class="fa-solid fa-certificate"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Certificates Issued</p>
-                                    <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="statCerts">0</h3>
-                                </div>
-                            </div>
-
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                                <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
-                                    <i class="fa-solid fa-user-check"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Users</p>
-                                    <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="statUsers">4</h3>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Main Dashboard Row: Recent Residents Table & Welcome Hero Card -->
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <!-- Recent Residents Table -->
-                            <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
-                                <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                                    <div>
-                                        <h2 class="font-bold text-slate-900 text-base">Recent Residents</h2>
-                                        <p class="text-xs text-slate-500 mt-0.5">Newly registered community members</p>
-                                    </div>
-                                    <button onclick="switchView('residents')" class="text-xs font-bold text-brand-600 hover:text-brand-700 bg-brand-50 px-3 py-1.5 rounded-lg transition">View All Records &rarr;</button>
-                                </div>
-                                <div class="overflow-x-auto flex-1">
-                                    <table class="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr class="bg-slate-50 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider border-b border-slate-100">
-                                                <th class="py-3.5 px-6">Name</th>
-                                                <th class="py-3.5 px-6">Household</th>
-                                                <th class="py-3.5 px-6">Status</th>
-                                                <th class="py-3.5 px-6">Date Registered</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="recentResidentsTable" class="divide-y divide-slate-100 text-xs">
-                                            <!-- Dynamically Populated -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Welcome Side Banner -->
-                            <div class="bg-gradient-to-br from-white to-slate-50 p-8 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden">
-                                <div class="w-20 h-20 bg-brand-50 text-brand-600 rounded-3xl flex items-center justify-center text-3xl mb-5 shadow-sm border border-brand-100">
-                                    <i class="fa-solid fa-users-rectangle"></i>
-                                </div>
-                                <h3 class="text-lg font-bold text-slate-900 leading-snug">Welcome to the Barangay Resident Information System</h3>
-                                <p class="text-xs text-slate-500 mt-3 leading-relaxed">Manage resident records, view real-time statistics, issue clearances, and keep community data up to date with full efficiency.</p>
-                                <button onclick="openAddResidentModal()" class="mt-6 w-full py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-brand-500/20 active:scale-[0.98] flex items-center justify-center space-x-2">
-                                    <i class="fa-solid fa-plus text-xs"></i>
-                                    <span>Add New Resident</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ================= RESIDENT REQUESTS VIEW ================= -->
-                    <div id="view-requests" class="view-content hidden space-y-5">
-                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pending</p>
-                                <h3 class="text-3xl font-extrabold text-amber-600 mt-1" id="cPending">0</h3>
-                            </div>
-                            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Approved</p>
-                                <h3 class="text-3xl font-extrabold text-emerald-600 mt-1" id="cApproved">0</h3>
-                            </div>
-                            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Released</p>
-                                <h3 class="text-3xl font-extrabold text-brand-600 mt-1" id="cReleased">0</h3>
-                            </div>
-                            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rejected</p>
-                                <h3 class="text-3xl font-extrabold text-rose-600 mt-1" id="cRejected">0</h3>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                            <div class="relative flex-1 min-w-[220px]">
-                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                <input type="text" id="reqSearch" placeholder="Hanapin ang pangalan, address, o phone..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
-                            </div>
-                            <select id="reqFilterStatus" class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                                <option value="">Lahat ng Status</option>
-                                <option>Pending</option>
-                                <option>Approved</option>
-                                <option>Released</option>
-                                <option>Rejected</option>
-                            </select>
-                            <select id="reqFilterType" class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                                <option value="">Lahat ng Uri</option>
-                                <option>Barangay Clearance</option>
-                                <option>Certificate of Indigency</option>
-                                <option>Certificate of Residency</option>
-                                <option>Appointment</option>
-                            </select>
-                        </div>
-
-                        <div id="reqList" class="space-y-3"></div>
-                    </div>
-
-                    <!-- ================= RESIDENT RECORDS VIEW ================= -->
-                    <div id="view-residents" class="view-content hidden space-y-5">
-                        <!-- Top Action Controls Header -->
-                        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                            <div class="flex flex-wrap items-center gap-3 flex-1">
-                                <div class="relative min-w-[280px]">
-                                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                                    <input type="text" id="residentSearchInput" oninput="filterResidentsTable()" placeholder="Search by name, ID, address..." class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
-                                </div>
-
-                                <select id="householdFilter" onchange="filterResidentsTable()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                                    <option value="">All Households</option>
-                                </select>
-
-                                <select id="statusFilter" onchange="filterResidentsTable()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                                    <option value="">All Status</option>
-                                    <option value="Active">Active</option>
-                                    <option value="Inactive">Inactive</option>
-                                </select>
-                            </div>
-
-                            <button onclick="openAddResidentModal()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition shadow-md shadow-brand-500/20 flex items-center justify-center space-x-2">
-                                <i class="fa-solid fa-plus text-xs"></i>
-                                <span>Add Resident</span>
-                            </button>
-                        </div>
-
-                        <!-- Residents Full Desktop Data Table -->
-                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr class="bg-slate-50 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider border-b border-slate-100">
-                                            <th class="py-4 px-6">Resident ID</th>
-                                            <th class="py-4 px-6">Name</th>
-                                            <th class="py-4 px-6">Age</th>
-                                            <th class="py-4 px-6">Gender</th>
-                                            <th class="py-4 px-6">Household</th>
-                                            <th class="py-4 px-6">Status</th>
-                                            <th class="py-4 px-6 text-center">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="residentsTableBody" class="divide-y divide-slate-100 text-xs font-medium">
-                                        <!-- Dynamically Populated -->
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <!-- Pagination Controls -->
-                            <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 bg-slate-50/50">
-                                <span id="residentCountInfo" class="font-semibold text-slate-600">Showing 1-8 of 1,248 residents</span>
-                                <div class="flex items-center space-x-1.5">
-                                    <button class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 font-semibold text-slate-600">&lt;</button>
-                                    <button class="px-3 py-1.5 bg-brand-600 text-white rounded-lg font-bold shadow-sm">1</button>
-                                    <button class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 font-semibold text-slate-600">2</button>
-                                    <button class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 font-semibold text-slate-600">3</button>
-                                    <button class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 font-semibold text-slate-600">&gt;</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ================= SEARCH VIEW ================= -->
-                    <div id="view-search" class="view-content hidden space-y-6">
-                        <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm space-y-6">
-                            <div>
-                                <h2 class="text-lg font-bold text-slate-900">Search Resident Information</h2>
-                                <p class="text-xs text-slate-500 mt-1">Find resident records quickly across the database using keyword parameters.</p>
-                            </div>
-
-                            <div class="flex flex-col sm:flex-row gap-3">
-                                <div class="relative flex-1">
-                                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                    <input type="text" id="searchGlobalInput" onkeyup="executeAdvancedSearch()" placeholder="Search by name, resident ID, or address..." class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
-                                </div>
-                                <button onclick="executeAdvancedSearch()" class="bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-xl text-xs font-bold transition shadow-md shadow-brand-500/20">
-                                    Search Database
-                                </button>
-                            </div>
-
-                            <div class="pt-4 border-t border-slate-100">
-                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Advanced Filters</label>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div>
-                                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Household</label>
-                                        <select id="advHousehold" onchange="executeAdvancedSearch()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-700 font-medium">
-                                            <option value="">All Households</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Status</label>
-                                        <select id="advStatus" onchange="executeAdvancedSearch()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-700 font-medium">
-                                            <option value="">All Status</option>
-                                            <option value="Active">Active</option>
-                                            <option value="Inactive">Inactive</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Gender</label>
-                                        <select id="advGender" onchange="executeAdvancedSearch()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-700 font-medium">
-                                            <option value="">All Gender</option>
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Results Table -->
-                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                                <h3 class="font-bold text-slate-900 text-sm">Search Results</h3>
-                                <span id="searchResultsCount" class="text-xs font-semibold text-slate-500 bg-slate-200/60 px-2.5 py-1 rounded-full">Total results: 0</span>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr class="bg-slate-50 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider border-b border-slate-100">
-                                            <th class="py-3.5 px-6">ID</th>
-                                            <th class="py-3.5 px-6">Name</th>
-                                            <th class="py-3.5 px-6">Age</th>
-                                            <th class="py-3.5 px-6">Gender</th>
-                                            <th class="py-3.5 px-6">Household</th>
-                                            <th class="py-3.5 px-6">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="searchResultsTable" class="divide-y divide-slate-100 text-xs font-medium">
-                                        <!-- Dynamically Populated -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ================= REPORTS VIEW ================= -->
-                    <div id="view-reports" class="view-content hidden space-y-6">
-                        <div>
-                            <h2 class="text-lg font-bold text-slate-900">Barangay System Reports</h2>
-                            <p class="text-xs text-slate-500 mt-1">Generate official system summaries, resident lists, and certificate reports.</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Report Card 1 -->
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-5 hover:border-brand-300 transition-all">
-                                <div class="flex items-start space-x-4">
-                                    <div class="w-12 h-12 bg-blue-50 text-brand-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
-                                        <i class="fa-solid fa-list-check"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-slate-900 text-sm">Resident List Report</h3>
-                                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Complete official list of all registered barangay residents with demographic data.</p>
-                                    </div>
-                                </div>
-                                <button onclick="generateReport('Resident List')" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-brand-500/10">
-                                    Generate Report
-                                </button>
-                            </div>
-
-                            <!-- Report Card 2 -->
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-5 hover:border-emerald-300 transition-all">
-                                <div class="flex items-start space-x-4">
-                                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
-                                        <i class="fa-solid fa-house-user"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-slate-900 text-sm">Household Report</h3>
-                                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Detailed summary of households, family head mappings, and residence counts.</p>
-                                    </div>
-                                </div>
-                                <button onclick="generateReport('Household Report')" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-brand-500/10">
-                                    Generate Report
-                                </button>
-                            </div>
-
-                            <!-- Report Card 3 -->
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-5 hover:border-amber-300 transition-all">
-                                <div class="flex items-start space-x-4">
-                                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
-                                        <i class="fa-solid fa-file-contract"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-slate-900 text-sm">Certificate Report</h3>
-                                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Audit summary of issued clearances, residency certificates, and indigency forms.</p>
-                                    </div>
-                                </div>
-                                <button onclick="generateReport('Certificate Report')" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-brand-500/10">
-                                    Generate Report
-                                </button>
-                            </div>
-
-                            <!-- Report Card 4 -->
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between space-y-5 hover:border-purple-300 transition-all">
-                                <div class="flex items-start space-x-4">
-                                    <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
-                                        <i class="fa-solid fa-shield-cat"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-slate-900 text-sm">Blotter Report</h3>
-                                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">Summary of recorded barangay blotters, incidents, and settlement statuses.</p>
-                                    </div>
-                                </div>
-                                <button onclick="generateReport('Blotter Report')" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-brand-500/10">
-                                    Generate Report
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ================= USER ACCOUNTS VIEW ================= -->
-                    <div id="view-users" class="view-content hidden space-y-5">
-                        <div class="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-                            <div>
-                                <h2 class="text-lg font-bold text-slate-900">User Accounts</h2>
-                                <p class="text-xs text-slate-500 mt-0.5">Manage system staff and administrative user roles.</p>
-                            </div>
-
-                            <button onclick="openAddUserModal()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition shadow-md shadow-brand-500/20 flex items-center space-x-2">
-                                <i class="fa-solid fa-plus text-xs"></i>
-                                <span>Add User</span>
-                            </button>
-                        </div>
-
-                        <!-- System Users Table -->
-                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr class="bg-slate-50 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider border-b border-slate-100">
-                                            <th class="py-4 px-6">Username</th>
-                                            <th class="py-4 px-6">Full Name</th>
-                                            <th class="py-4 px-6">Role</th>
-                                            <th class="py-4 px-6">Status</th>
-                                            <th class="py-4 px-6 text-center">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="usersTableBody" class="divide-y divide-slate-100 text-xs font-medium">
-                                        <!-- Dynamically Populated -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                </main>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Add/Edit Resident Modal -->
-    <div id="addResidentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-lg bg-brand-100 text-brand-600 flex items-center justify-center font-bold text-sm">
-                        <i class="fa-solid fa-user-plus"></i>
-                    </div>
-                    <h3 id="residentModalTitle" class="font-bold text-slate-900 text-base">Add Resident</h3>
-                </div>
-                <button onclick="closeAddResidentModal()" class="text-slate-400 hover:text-slate-600 transition p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <form id="residentForm" onsubmit="saveResident(event)" class="p-6 overflow-y-auto space-y-6">
-                <input type="hidden" id="resId">
-
-                <!-- Personal Information Section -->
-                <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200/60">
-                    <h4 class="text-xs font-extrabold text-brand-600 uppercase tracking-wider mb-4 flex items-center">
-                        <i class="fa-solid fa-id-card mr-2"></i> Personal Information
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="sm:col-span-2 lg:col-span-1">
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">First Name *</label>
-                            <input type="text" id="resFirstName" required placeholder="e.g. Juan" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Middle Name</label>
-                            <input type="text" id="resMiddleName" placeholder="e.g. Mercado" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Last Name *</label>
-                            <input type="text" id="resLastName" required placeholder="e.g. Dela Cruz" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Suffix</label>
-                            <select id="resSuffix" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                                <option value="N/A">N/A</option>
-                                <option value="Jr.">Jr.</option>
-                                <option value="Sr.">Sr.</option>
-                                <option value="III">III</option>
-                            </select>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Date of Birth *</label>
-                            <input type="date" id="resDob" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Gender *</label>
-                            <select id="resGender" required class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                                <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Address Information Section -->
-                <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200/60">
-                    <h4 class="text-xs font-extrabold text-brand-600 uppercase tracking-wider mb-4 flex items-center">
-                        <i class="fa-solid fa-map-location-dot mr-2"></i> Address Information
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">House No. / Street</label>
-                            <input type="text" id="resStreet" placeholder="e.g. 123 Main Street" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Barangay</label>
-                            <input type="text" id="resBarangay" value="Barangay San Jose" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">City / Municipality</label>
-                            <input type="text" id="resCity" value="Metro Manila" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Province</label>
-                            <input type="text" id="resProvince" value="NCR" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Household Section -->
-                <div class="bg-slate-50/50 p-4 rounded-xl border border-slate-200/60">
-                    <h4 class="text-xs font-extrabold text-brand-600 uppercase tracking-wider mb-4 flex items-center">
-                        <i class="fa-solid fa-house-chimney-window mr-2"></i> Household Information
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Household No. *</label>
-                            <input type="text" id="resHousehold" required placeholder="e.g. Household 001" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Status</label>
-                            <select id="resStatus" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Modal Action Buttons -->
-                <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-3">
-                    <button type="button" onclick="closeAddResidentModal()" class="px-5 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl text-xs font-bold transition">Cancel</button>
-                    <button type="submit" class="px-7 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-brand-500/20">Save Resident</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- View Resident Modal -->
-    <div id="viewResidentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-bold text-slate-900 text-base">Resident Record Details</h3>
-                <button onclick="closeViewResidentModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div id="viewResidentContent" class="p-6 text-xs space-y-4">
-                <!-- Dynamically Inserted Details -->
-            </div>
-            <div class="p-4 bg-slate-50 border-t border-slate-100 text-right">
-                <button onclick="closeViewResidentModal()" class="px-5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add System User Modal -->
-    <div id="addUserModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-200">
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-bold text-slate-900 text-base">Add System User</h3>
-                <button onclick="closeAddUserModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form onsubmit="saveUser(event)" class="p-6 space-y-4 text-xs">
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase text-[10px] mb-1">Username *</label>
-                    <input type="text" id="usrUsername" required placeholder="e.g. staff_marias" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase text-[10px] mb-1">Full Name *</label>
-                    <input type="text" id="usrFullName" required placeholder="e.g. Maria Santos" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 uppercase text-[10px] mb-1">Role *</label>
-                    <select id="usrRole" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none">
-                        <option value="Administrator">Administrator</option>
-                        <option value="Staff">Staff</option>
-                        <option value="Viewer">Viewer</option>
-                    </select>
-                </div>
-                <div class="pt-4 border-t border-slate-100 flex justify-end space-x-2">
-                    <button type="button" onclick="closeAddUserModal()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-bold">Cancel</button>
-                    <button type="submit" class="px-6 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold transition shadow-md shadow-brand-500/20">Save User</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Report Preview Print Modal -->
-    <div id="reportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200">
-            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between no-print">
-                <h3 id="reportModalTitle" class="font-bold text-slate-900 text-base">Generated System Report</h3>
-                <button onclick="closeReportModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div id="printableReportArea" class="p-8 overflow-y-auto flex-1 font-sans text-xs text-slate-800 bg-white">
-                <!-- Dynamically Inserted Printable Content -->
-            </div>
-            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center no-print">
-                <span class="text-xs text-slate-400 font-medium">Official Digital Report &bull; Barangay Info System</span>
-                <div class="space-x-2">
-                    <button onclick="window.print()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex-inline items-center"><i class="fa-solid fa-print mr-1.5"></i> Print / Export PDF</button>
-                    <button onclick="closeReportModal()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-100">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Notification Toast Element -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center space-x-3 text-xs border border-slate-700">
-        <i class="fa-solid fa-circle-check text-brand-400 text-base" id="toastIcon"></i>
-        <span id="toastMessage" class="font-medium">Operation completed successfully.</span>
-    </div>
-
-    <script>
-        // Pre-populated Data matching UI wireframe mockups
-        const initialResidents = [
-            { id: "BR-0001", name: "Juan Dela Cruz", firstName: "Juan", lastName: "Dela Cruz", age: 28, gender: "Male", household: "Household 001", status: "Active", dateRegistered: "Aug 10, 2026", dob: "1998-05-14" },
-            { id: "BR-0002", name: "Maria Santos", firstName: "Maria", lastName: "Santos", age: 32, gender: "Female", household: "Household 002", status: "Active", dateRegistered: "Aug 09, 2026", dob: "1994-02-20" },
-            { id: "BR-0003", name: "Pedro Reyes", firstName: "Pedro", lastName: "Reyes", age: 45, gender: "Male", household: "Household 003", status: "Active", dateRegistered: "Aug 08, 2026", dob: "1981-11-03" },
-            { id: "BR-0004", name: "Ana Lopez", firstName: "Ana", lastName: "Lopez", age: 27, gender: "Female", household: "Household 004", status: "Active", dateRegistered: "Aug 07, 2026", dob: "1999-08-19" },
-            { id: "BR-0005", name: "Jose Villanueva", firstName: "Jose", lastName: "Villanueva", age: 38, gender: "Male", household: "Household 005", status: "Active", dateRegistered: "Aug 06, 2026", dob: "1988-04-12" },
-            { id: "BR-0006", name: "Liza Garcia", firstName: "Liza", lastName: "Garcia", age: 22, gender: "Female", household: "Household 006", status: "Active", dateRegistered: "Aug 05, 2026", dob: "2004-01-30" },
-            { id: "BR-0007", name: "Carlo Cruz", firstName: "Carlo", lastName: "Cruz", age: 31, gender: "Male", household: "Household 007", status: "Active", dateRegistered: "Aug 04, 2026", dob: "1995-09-15" },
-            { id: "BR-0008", name: "Angela Ramos", firstName: "Angela", lastName: "Ramos", age: 29, gender: "Female", household: "Household 008", status: "Active", dateRegistered: "Aug 03, 2026", dob: "1997-07-22" }
-        ];
-
-        const initialUsers = [
-            { username: "admin", fullName: "Juan Dela Cruz", role: "Administrator", status: "Active" },
-            { username: "staff1", fullName: "Maria Santos", role: "Staff", status: "Active" },
-            { username: "staff2", fullName: "Pedro Reyes", role: "Staff", status: "Active" },
-            { username: "viewer1", fullName: "Ana Lopez", role: "Viewer", status: "Active" }
-        ];
-
-        // Global Application State
-        let residents = JSON.parse(localStorage.getItem('bris_desktop_residents')) || initialResidents;
-        let systemUsers = JSON.parse(localStorage.getItem('bris_desktop_users')) || initialUsers;
-
-        // Startup Handlers
-        window.onload = function() {
-            renderDashboard();
-            renderResidentsTable();
-            renderUsersTable();
-            populateHouseholdDropdowns();
-        };
-
-        function handleLogin(e) {
-            e.preventDefault();
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('mainLayout').classList.remove('hidden');
-            showNotification('Welcome back, Admin Administrator!', 'success');
-        }
-
-        function handleLogout() {
-            document.getElementById('mainLayout').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-            showNotification('Logged out from session.', 'info');
-        }
-
-        function togglePasswordVisibility() {
-            const input = document.getElementById('loginPassword');
-            const eye = document.getElementById('passwordEye');
-            if (input.type === 'password') {
-                input.type = 'text';
-                eye.classList.remove('fa-eye');
-                eye.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                eye.classList.remove('fa-eye-slash');
-                eye.classList.add('fa-eye');
-            }
-        }
-
-        function switchView(viewName) {
-            // Update Navigation Button Active State
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-slate-800/80', 'text-white', 'active');
-                btn.classList.add('text-slate-300');
-            });
-
-            const activeNav = document.getElementById(`nav-${viewName}`);
-            if (activeNav) {
-                activeNav.classList.add('bg-slate-800/80', 'text-white', 'active');
-                activeNav.classList.remove('text-slate-300');
-            }
-
-            // View Toggle
-            document.querySelectorAll('.view-content').forEach(view => {
-                view.classList.add('hidden');
-            });
-
-            const targetView = document.getElementById(`view-${viewName}`);
-            if (targetView) {
-                targetView.classList.remove('hidden');
-            }
-
-            // Header Title Update
-            const titles = {
-                dashboard: 'Dashboard',
-                residents: 'Resident Records',
-                search: 'Search View',
-                reports: 'Reports',
-                users: 'User Accounts'
-            };
-            document.getElementById('pageTitle').innerText = titles[viewName] || 'Dashboard';
-
-            if (viewName === 'search') executeAdvancedSearch();
-        }
-
-        function renderDashboard() {
-            // Stats
-            document.getElementById('statResidents').innerText = (1240 + residents.length).toLocaleString();
-            const households = new Set(residents.map(r => r.household));
-            document.getElementById('statHouseholds').innerText = (400 + households.size).toString();
-            document.getElementById('statUsers').innerText = systemUsers.length.toString();
-
-            // Recent Table Update
-            const recentTbody = document.getElementById('recentResidentsTable');
-            recentTbody.innerHTML = '';
-
-            const recentList = residents.slice(0, 5);
-            recentList.forEach(r => {
-                recentTbody.innerHTML += `
-                    <tr class="hover:bg-slate-50/80 transition border-b border-slate-100">
-                        <td class="py-3.5 px-6 font-bold text-slate-800">${r.name}</td>
-                        <td class="py-3.5 px-6 text-slate-500 font-medium">${r.household}</td>
-                        <td class="py-3.5 px-6">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                                ${r.status}
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-6 text-slate-500 font-medium">${r.dateRegistered || 'Aug 10, 2026'}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        function renderResidentsTable(data = residents) {
-            const tbody = document.getElementById('residentsTableBody');
-            tbody.innerHTML = '';
-
-            data.forEach(r => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="py-3.5 px-6 font-mono font-bold text-slate-600">${r.id}</td>
-                        <td class="py-3.5 px-6 font-bold text-slate-900">${r.name}</td>
-                        <td class="py-3.5 px-6 text-slate-600">${r.age}</td>
-                        <td class="py-3.5 px-6 text-slate-600">${r.gender}</td>
-                        <td class="py-3.5 px-6 text-slate-600">${r.household}</td>
-                        <td class="py-3.5 px-6">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${r.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">
-                                ${r.status}
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-6 text-center space-x-2">
-                            <button onclick="viewResident('${r.id}')" class="p-1.5 text-brand-600 hover:text-brand-800 hover:bg-brand-50 rounded-lg transition" title="View"><i class="fa-solid fa-eye"></i></button>
-                            <button onclick="editResident('${r.id}')" class="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="deleteResident('${r.id}')" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('residentCountInfo').innerText = `Showing 1-${data.length} of ${1240 + residents.length} residents`;
-        }
-
-        function filterResidentsTable() {
-            const query = document.getElementById('residentSearchInput').value.toLowerCase();
-            const household = document.getElementById('householdFilter').value;
-            const status = document.getElementById('statusFilter').value;
-
-            const filtered = residents.filter(r => {
-                const matchesQuery = r.name.toLowerCase().includes(query) || r.id.toLowerCase().includes(query) || r.household.toLowerCase().includes(query);
-                const matchesHousehold = household === "" || r.household === household;
-                const matchesStatus = status === "" || r.status === status;
-
-                return matchesQuery && matchesHousehold && matchesStatus;
-            });
-
-            renderResidentsTable(filtered);
-        }
-
-        function populateHouseholdDropdowns() {
-            const households = Array.from(new Set(residents.map(r => r.household))).sort();
-            const selects = ['householdFilter', 'advHousehold'];
-
-            selects.forEach(id => {
-                const select = document.getElementById(id);
-                if (!select) return;
-                const currentVal = select.value;
-                select.innerHTML = '<option value="">All Households</option>';
-                households.forEach(h => {
-                    select.innerHTML += `<option value="${h}">${h}</option>`;
-                });
-                select.value = currentVal;
-            });
-        }
-
-        function openAddResidentModal() {
-            document.getElementById('residentModalTitle').innerText = "Add New Resident";
-            document.getElementById('residentForm').reset();
-            document.getElementById('resId').value = "";
-            document.getElementById('addResidentModal').classList.remove('hidden');
-        }
-
-        function closeAddResidentModal() {
-            document.getElementById('addResidentModal').classList.add('hidden');
-        }
-
-        function saveResident(e) {
-            e.preventDefault();
-            const id = document.getElementById('resId').value;
-            const firstName = document.getElementById('resFirstName').value;
-            const lastName = document.getElementById('resLastName').value;
-            const dob = document.getElementById('resDob').value;
-            const gender = document.getElementById('resGender').value;
-            const household = document.getElementById('resHousehold').value;
-            const status = document.getElementById('resStatus').value;
-
-            const birthYear = new Date(dob).getFullYear();
-            const age = isNaN(birthYear) ? 25 : (2026 - birthYear);
-
-            if (id) {
-                // Edit existing
-                const index = residents.findIndex(r => r.id === id);
-                if (index !== -1) {
-                    residents[index] = {
-                        ...residents[index],
-                        firstName,
-                        lastName,
-                        name: `${firstName} ${lastName}`,
-                        dob,
-                        age,
-                        gender,
-                        household,
-                        status
-                    };
-                    showNotification('Resident record updated successfully!', 'success');
-                }
-            } else {
-                // Add new
-                const newId = `BR-${Math.floor(1000 + Math.random() * 9000)}`;
-                const newResident = {
-                    id: newId,
-                    name: `${firstName} ${lastName}`,
-                    firstName,
-                    lastName,
-                    dob,
-                    age,
-                    gender,
-                    household,
-                    status,
-                    dateRegistered: 'Oct 05, 2026'
-                };
-                residents.unshift(newResident);
-                showNotification('New resident added successfully!', 'success');
-            }
-
-            localStorage.setItem('bris_desktop_residents', JSON.stringify(residents));
-            closeAddResidentModal();
-            renderDashboard();
-            renderResidentsTable();
-            populateHouseholdDropdowns();
-        }
-
-        function editResident(id) {
-            const r = residents.find(item => item.id === id);
-            if (!r) return;
-
-            document.getElementById('residentModalTitle').innerText = "Edit Resident Record";
-            document.getElementById('resId').value = r.id;
-            document.getElementById('resFirstName').value = r.firstName || r.name.split(' ')[0];
-            document.getElementById('resLastName').value = r.lastName || r.name.split(' ')[1] || '';
-            document.getElementById('resDob').value = r.dob || '1995-01-01';
-            document.getElementById('resGender').value = r.gender;
-            document.getElementById('resHousehold').value = r.household;
-            document.getElementById('resStatus').value = r.status;
-
-            document.getElementById('addResidentModal').classList.remove('hidden');
-        }
-
-        function deleteResident(id) {
-            if (confirm("Are you sure you want to delete this resident record from database?")) {
-                residents = residents.filter(r => r.id !== id);
-                localStorage.setItem('bris_desktop_residents', JSON.stringify(residents));
-                renderDashboard();
-                renderResidentsTable();
-                populateHouseholdDropdowns();
-                showNotification('Resident record deleted.', 'info');
-            }
-        }
-
-        function viewResident(id) {
-            const r = residents.find(item => item.id === id);
-            if (!r) return;
-
-            const content = document.getElementById('viewResidentContent');
-            content.innerHTML = `
-                <div class="flex items-center space-x-4 mb-4 pb-4 border-b border-slate-100">
-                    <div class="w-14 h-14 bg-brand-100 text-brand-600 rounded-2xl flex items-center justify-center font-bold text-xl shadow-inner">
-                        ${r.name.charAt(0)}
-                    </div>
-                    <div>
-                        <h4 class="text-base font-bold text-slate-900">${r.name}</h4>
-                        <p class="text-slate-400 font-mono">ID: ${r.id}</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-slate-600 font-medium">
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><strong class="text-slate-900 block text-[10px] uppercase font-bold">Age</strong> ${r.age} yrs old</div>
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><strong class="text-slate-900 block text-[10px] uppercase font-bold">Gender</strong> ${r.gender}</div>
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><strong class="text-slate-900 block text-[10px] uppercase font-bold">Household</strong> ${r.household}</div>
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><strong class="text-slate-900 block text-[10px] uppercase font-bold">Status</strong> ${r.status}</div>
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><strong class="text-slate-900 block text-[10px] uppercase font-bold">Date Registered</strong> ${r.dateRegistered || 'Aug 10, 2026'}</div>
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><strong class="text-slate-900 block text-[10px] uppercase font-bold">Barangay</strong> San Jose</div>
-                </div>
-            `;
-            document.getElementById('viewResidentModal').classList.remove('hidden');
-        }
-
-        function closeViewResidentModal() {
-            document.getElementById('viewResidentModal').classList.add('hidden');
-        }
-
-        function executeAdvancedSearch() {
-            const query = (document.getElementById('searchGlobalInput').value || '').toLowerCase();
-            const household = document.getElementById('advHousehold').value;
-            const status = document.getElementById('advStatus').value;
-            const gender = document.getElementById('advGender').value;
-
-            const results = residents.filter(r => {
-                const matchesQuery = r.name.toLowerCase().includes(query) || r.id.toLowerCase().includes(query);
-                const matchesHousehold = household === "" || r.household === household;
-                const matchesStatus = status === "" || r.status === status;
-                const matchesGender = gender === "" || r.gender === gender;
-
-                return matchesQuery && matchesHousehold && matchesStatus && matchesGender;
-            });
-
-            const tbody = document.getElementById('searchResultsTable');
-            tbody.innerHTML = '';
-            results.forEach(r => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="py-3.5 px-6 font-mono font-bold text-slate-600">${r.id}</td>
-                        <td class="py-3.5 px-6 font-bold text-slate-900">${r.name}</td>
-                        <td class="py-3.5 px-6 text-slate-600">${r.age}</td>
-                        <td class="py-3.5 px-6 text-slate-600">${r.gender}</td>
-                        <td class="py-3.5 px-6 text-slate-600">${r.household}</td>
-                        <td class="py-3.5 px-6">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ${r.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">
-                                ${r.status}
-                            </span>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('searchResultsCount').innerText = `Total results: ${results.length}`;
-        }
-
-        function generateReport(reportType) {
-            document.getElementById('reportModalTitle').innerText = reportType;
-            const content = document.getElementById('printableReportArea');
-            
-            const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-            let detailsHTML = `
-                <div class="text-center mb-8 pb-6 border-b-2 border-slate-800">
-                    <h2 class="font-extrabold text-lg text-slate-900 uppercase tracking-widest">Republic of the Philippines</h2>
-                    <h3 class="font-bold text-sm text-slate-700">Barangay Resident Information System Portal</h3>
-                    <p class="text-xs font-semibold text-brand-600 mt-2 tracking-wide uppercase">OFFICIAL SUMMARY REPORT - ${reportType.toUpperCase()}</p>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Date Generated: ${dateStr}</p>
-                </div>
-            `;
-
-            if (reportType === 'Resident List') {
-                detailsHTML += `
-                    <table class="w-full text-left border-collapse border border-slate-300 text-xs">
-                        <thead>
-                            <tr class="bg-slate-100 text-slate-900 font-bold">
-                                <th class="p-3 border border-slate-300">ID</th>
-                                <th class="p-3 border border-slate-300">Resident Name</th>
-                                <th class="p-3 border border-slate-300">Household</th>
-                                <th class="p-3 border border-slate-300">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${residents.map(r => `
-                                <tr>
-                                    <td class="p-3 border border-slate-300 font-mono">${r.id}</td>
-                                    <td class="p-3 border border-slate-300 font-semibold">${r.name}</td>
-                                    <td class="p-3 border border-slate-300">${r.household}</td>
-                                    <td class="p-3 border border-slate-300">${r.status}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
-            } else {
-                detailsHTML += `
-                    <div class="p-6 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                        <p class="font-bold text-slate-900 text-sm">System Audit & Data Summary:</p>
-                        <ul class="list-disc list-inside space-y-1.5 text-slate-700 font-medium text-xs">
-                            <li>Total Barangay Records Evaluated: 1,248</li>
-                            <li>Active Registered Residents: ${residents.length}</li>
-                            <li>Mapped Households: 412</li>
-                            <li>Pending Clearances & Issuances: 3</li>
-                            <li>Verified System Administrator: Admin Administrator</li>
-                        </ul>
-                    </div>
-                `;
-            }
-
-            content.innerHTML = detailsHTML;
-            document.getElementById('reportModal').classList.remove('hidden');
-        }
-
-        function closeReportModal() {
-            document.getElementById('reportModal').classList.add('hidden');
-        }
-
-        function renderUsersTable() {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
-
-            systemUsers.forEach((u, index) => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="py-3.5 px-6 font-bold text-slate-900">${u.username}</td>
-                        <td class="py-3.5 px-6 text-slate-600 font-medium">${u.fullName}</td>
-                        <td class="py-3.5 px-6 text-slate-700 font-bold">${u.role}</td>
-                        <td class="py-3.5 px-6">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                                ${u.status}
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-6 text-center">
-                            <button onclick="deleteUser(${index})" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition" title="Delete User"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function openAddUserModal() {
-            document.getElementById('addUserModal').classList.remove('hidden');
-        }
-
-        function closeAddUserModal() {
-            document.getElementById('addUserModal').classList.add('hidden');
-        }
-
-        function saveUser(e) {
-            e.preventDefault();
-            const username = document.getElementById('usrUsername').value;
-            const fullName = document.getElementById('usrFullName').value;
-            const role = document.getElementById('usrRole').value;
-
-            systemUsers.push({ username, fullName, role, status: 'Active' });
-            localStorage.setItem('bris_desktop_users', JSON.stringify(systemUsers));
-            
-            closeAddUserModal();
-            renderUsersTable();
-            renderDashboard();
-            showNotification('New user account created successfully!', 'success');
-        }
-
-        function deleteUser(index) {
-            if (confirm("Are you sure you want to remove this user account?")) {
-                systemUsers.splice(index, 1);
-                localStorage.setItem('bris_desktop_users', JSON.stringify(systemUsers));
-                renderUsersTable();
-                renderDashboard();
-                showNotification('User account removed.', 'info');
-            }
-        }
-
-        function showNotification(msg, type = 'info') {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toastMessage');
-            toastMsg.innerText = msg;
-
-            toast.classList.remove('translate-y-24', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-24', 'opacity-0');
-            }, 3000);
-        }
-    </script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-        import {
-            getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-        import {
-            getFirestore, doc, getDoc, updateDoc, collection, onSnapshot
-        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-        import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/+esm";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBuGSvWeiQmgbG6vHt1QQou-c43c1t926g",
-            authDomain: "barangay-system-83389.firebaseapp.com",
-            projectId: "barangay-system-83389",
-            storageBucket: "barangay-system-83389.firebasestorage.app",
-            messagingSenderId: "707377538631",
-            appId: "1:707377538631:web:4fe59889fb0e91cec53362"
-        };
-
-        // ====== EMAIL SA RESIDENTE (EmailJS) ======
-        // Kopyahin ang tatlong value na ito mula sa dati niyong admin.html (EMAIL SA RESIDENTE).
-        const EMAILJS_PUBLIC_KEY = "tK6EZiFcBZ2cdw-IF";
-        const EMAILJS_SERVICE_ID = "service_kd1iw66";
-        const EMAILJS_RESIDENT_TEMPLATE_ID = "template_1twy2df";
-        // ==========================================
-
-        // ====== PARA SA CERTIFICATE ======
-        const BARANGAY_NAME = "Barangay (PANGALAN)";
-        const CITY_PROVINCE = "(Lungsod/Bayan), (Probinsya)";
-        const CAPTAIN_NAME = "(Pangalan ng Punong Barangay)";
-        // =================================
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        const $ = (id) => document.getElementById(id);
-        const STATUSES = ["Pending", "Approved", "Released", "Rejected"];
-        const BADGE = {
-            Pending: "bg-amber-100 text-amber-800",
-            Approved: "bg-emerald-100 text-emerald-800",
-            Released: "bg-blue-100 text-blue-800",
-            Rejected: "bg-rose-100 text-rose-800"
-        };
-        const BORDER = {
-            Pending: "border-l-amber-400",
-            Approved: "border-l-emerald-500",
-            Released: "border-l-blue-500",
-            Rejected: "border-l-rose-500"
-        };
-
-        let unsub = null;
-        let allRows = [];
-        let rowsById = {};
-        let firstLoad = true;
-        let newIds = new Set();
-
-        function esc(s) {
-            return String(s == null ? "" : s)
-                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-        }
-
-        /* ---------- Login / Logout ---------- */
-        window.handleLogin = async function (e) {
-            e.preventDefault();
-            const email = $("loginUsername").value.trim();
-            const pw = $("loginPassword").value;
-            if (!email || !pw) {
-                showNotification("Ilagay ang email at password.", "info");
-                return;
-            }
-            try {
-                await signInWithEmailAndPassword(auth, email, pw);
-            } catch (err) {
-                showNotification("Mali ang email o password.", "info");
-            }
-        };
-
-        window.handleLogout = function () {
-            signOut(auth);
-        };
-
-        /* ---------- Page title for Requests view ---------- */
-        const originalSwitchView = window.switchView;
-        window.switchView = function (viewName) {
-            originalSwitchView(viewName);
-            if (viewName === "requests") {
-                $("pageTitle").innerText = "Resident Requests";
-            }
-        };
-
-        /* ---------- Sound ---------- */
-        function beep() {
-            try {
-                const Ctx = window.AudioContext || window.webkitAudioContext;
-                const ctx = new Ctx();
-                const o = ctx.createOscillator();
-                const g = ctx.createGain();
-                o.connect(g);
-                g.connect(ctx.destination);
-                o.frequency.value = 880;
-                g.gain.value = 0.08;
-                o.start();
-                o.stop(ctx.currentTime + 0.18);
-            } catch (e) {
-                // Walang tunog, okay lang.
-            }
-        }
-
-        /* ---------- Email sa residente ---------- */
-        function statusMessage(r, status) {
-            if (status === "Approved") {
-                return r.type === "Appointment"
-                    ? "Naaprubahan na ang iyong appointment sa " + r.appointmentDate + ", " + r.appointmentTime + ". Pumunta sa barangay hall sa oras na iyon."
-                    : "Naaprubahan na ang iyong request. Hintayin ang abiso kung kailan ito pwedeng kunin.";
-            }
-            if (status === "Released") {
-                return "Handa na ang iyong request. Pwede mo na itong kunin sa barangay hall.";
-            }
-            if (status === "Rejected") {
-                return "Hindi naaprubahan ang iyong request. Makipag-ugnayan sa barangay hall para sa detalye.";
-            }
-            return "";
-        }
-
-        async function notifyResident(r, status) {
-            if (status === "Pending") return;
-            if (EMAILJS_PUBLIC_KEY === "PALITAN_DITO" || EMAILJS_SERVICE_ID === "PALITAN_DITO" || EMAILJS_RESIDENT_TEMPLATE_ID === "PALITAN_DITO") {
-                console.warn("EMAIL: hindi pa napalitan ang PALITAN_DITO");
-                return;
-            }
-            if (!r.email) {
-                console.warn("EMAIL: walang email ang request na ito");
-                return;
-            }
-            try {
-                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_RESIDENT_TEMPLATE_ID, {
-                    to_email: r.email,
-                    resident_name: r.residentName || "Residente",
-                    request_type: r.type,
-                    status: status,
-                    message: statusMessage(r, status)
-                }, { publicKey: EMAILJS_PUBLIC_KEY });
-                console.log("EMAIL: naipadala kay " + r.email);
-            } catch (err) {
-                console.error("EMAIL ERROR:", err && (err.text || err.message || err));
-            }
-        }
-
-        /* ---------- Print certificate ---------- */
-        function printCertificate(r) {
-            const name = esc(r.residentName || "");
-            const address = esc(r.address || "");
-            const purpose = esc(r.purpose || "");
-            const today = new Date().toLocaleDateString("fil-PH", { year: "numeric", month: "long", day: "numeric" });
-
-            let title = "";
-            let body = "";
-            if (r.type === "Barangay Clearance") {
-                title = "BARANGAY CLEARANCE";
-                body = "Ito ay nagpapatunay na si <b>" + name + "</b>, naninirahan sa " + address +
-                    ", ay isang residente ng barangay na ito at walang naitalang negatibong rekord sa aming tanggapan sa araw na ito. " +
-                    "Ang clearance na ito ay inilalabas para sa layuning: <b>" + purpose + "</b>.";
-            } else if (r.type === "Certificate of Indigency") {
-                title = "CERTIFICATE OF INDIGENCY";
-                body = "Ito ay nagpapatunay na si <b>" + name + "</b>, naninirahan sa " + address +
-                    ", ay isang residente ng barangay na ito at kabilang sa mga mahihirap na pamilya sa aming komunidad. " +
-                    "Ang sertipikong ito ay inilalabas para sa layuning: <b>" + purpose + "</b>.";
-            } else {
-                title = "CERTIFICATE OF RESIDENCY";
-                body = "Ito ay nagpapatunay na si <b>" + name + "</b> ay totoong naninirahan sa " + address +
-                    " sa loob ng nasasakupan ng barangay na ito. " +
-                    "Ang sertipikong ito ay inilalabas para sa layuning: <b>" + purpose + "</b>.";
-            }
-
-            const html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>" + title + "</title>" +
-                "<style>" +
-                "@page { size: A4; margin: 20mm; }" +
-                "body { font-family: 'Times New Roman', Times, serif; color: #000; line-height: 1.7; }" +
-                ".head { text-align: center; border-bottom: 3px double #000; padding-bottom: 12px; margin-bottom: 36px; }" +
-                ".head p { margin: 0; font-size: 14px; }" +
-                ".head h1 { margin: 4px 0; font-size: 22px; }" +
-                "h2 { text-align: center; font-size: 24px; letter-spacing: 2px; margin: 0 0 32px; }" +
-                "p.body { text-align: justify; text-indent: 48px; font-size: 17px; }" +
-                ".date { margin-top: 28px; font-size: 17px; }" +
-                ".sign { margin-top: 90px; text-align: right; }" +
-                ".sign .line { display: inline-block; min-width: 260px; border-top: 1px solid #000; text-align: center; padding-top: 4px; font-weight: bold; }" +
-                ".sign small { display: block; text-align: center; }" +
-                "</style></head><body>" +
-                "<div class='head'><p>Republika ng Pilipinas</p><p>" + esc(CITY_PROVINCE) + "</p><h1>" + esc(BARANGAY_NAME) + "</h1><p>Tanggapan ng Punong Barangay</p></div>" +
-                "<h2>" + title + "</h2>" +
-                "<p class='body'>" + body + "</p>" +
-                "<p class='date'>Inilabas ngayong " + today + " sa " + esc(BARANGAY_NAME) + ".</p>" +
-                "<div class='sign'><span class='line'>" + esc(CAPTAIN_NAME) + "<small>Punong Barangay</small></span></div>" +
-                "</body></html>";
-
-            const w = window.open("", "_blank");
-            if (!w) {
-                showNotification("Na-block ang bagong window. Payagan ang pop-ups.", "info");
-                return;
-            }
-            w.document.open();
-            w.document.write(html);
-            w.document.close();
-            w.focus();
-            setTimeout(() => w.print(), 400);
-        }
-
-        /* ---------- Render requests ---------- */
-        function ms(ts) {
-            return ts && ts.toMillis ? ts.toMillis() : Date.now();
-        }
-
-        function fmtDate(ts) {
-            if (!ts || !ts.toDate) return "";
-            return ts.toDate().toLocaleString("fil-PH", {
-                year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
-            });
-        }
-
-        function updateCounts() {
-            STATUSES.forEach((s) => {
-                $("c" + s).textContent = allRows.filter((r) => (r.status || "Pending") === s).length;
-            });
-            const pending = allRows.filter((r) => (r.status || "Pending") === "Pending").length;
-            const badge = $("reqBadge");
-            badge.textContent = pending;
-            badge.classList.toggle("hidden", pending === 0);
-
-            const certs = allRows.filter((r) => r.status === "Released" && r.type !== "Appointment").length;
-            $("statCerts").textContent = certs.toLocaleString();
-        }
-
-        function render() {
-            updateCounts();
-
-            const fs = $("reqFilterStatus").value;
-            const ft = $("reqFilterType").value;
-            const q = $("reqSearch").value.trim().toLowerCase();
-
-            const rows = allRows.filter((r) => {
-                const status = r.status || "Pending";
-                if (fs && status !== fs) return false;
-                if (ft && r.type !== ft) return false;
-                if (q) {
-                    const hay = ((r.residentName || "") + " " + (r.address || "") + " " + (r.phone || "") + " " + (r.email || "")).toLowerCase();
-                    if (!hay.includes(q)) return false;
-                }
-                return true;
-            });
-
-            const list = $("reqList");
-
-            if (rows.length === 0) {
-                list.innerHTML = '<div class="bg-white rounded-2xl border border-dashed border-slate-300 text-center text-slate-400 text-sm py-12">' +
-                    (allRows.length === 0 ? "Wala pang request." : "Walang request na tumutugma sa filter.") + "</div>";
-                return;
-            }
-
-            list.innerHTML = rows.map((r) => {
-                const status = r.status || "Pending";
-                const isFresh = newIds.has(r.id);
-                const sched = (r.type === "Appointment" && r.appointmentDate)
-                    ? '<p class="text-xs text-slate-600"><b>Iskedyul:</b> ' + esc(r.appointmentDate) + ", " + esc(r.appointmentTime) + "</p>"
-                    : "";
-                const options = STATUSES.map((s) =>
-                    '<option value="' + s + '"' + (s === status ? " selected" : "") + ">" + s + "</option>"
-                ).join("");
-                const printBtn = r.type !== "Appointment"
-                    ? '<button type="button" data-print="' + esc(r.id) + '" class="mt-2 w-full py-2 border border-brand-600 text-brand-600 hover:bg-brand-50 rounded-xl text-xs font-bold transition"><i class="fa-solid fa-print mr-1"></i> I-print ang certificate</button>'
-                    : "";
-
-                return '<div class="' + (isFresh ? "bg-amber-50 " : "bg-white ") + 'rounded-2xl border border-slate-200/80 border-l-4 ' + BORDER[status] + ' shadow-sm p-5 grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">' +
-                    "<div>" +
-                    '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ' + BADGE[status] + '">' + status + "</span>" +
-                    '<h3 class="font-bold text-slate-900 text-sm mt-2">' + esc(r.type) + " - " + esc(r.residentName || "Walang pangalan") + "</h3>" +
-                    '<div class="mt-1 space-y-0.5">' + sched +
-                    '<p class="text-xs text-slate-600"><b>Dahilan:</b> ' + esc(r.purpose) + "</p>" +
-                    '<p class="text-xs text-slate-500"><b>Phone:</b> ' + esc(r.phone) + "</p>" +
-                    '<p class="text-xs text-slate-500"><b>Address:</b> ' + esc(r.address) + "</p>" +
-                    '<p class="text-xs text-slate-500"><b>Email:</b> ' + esc(r.email) + "</p>" +
-                    '<p class="text-xs text-slate-400">Isinumite: ' + esc(fmtDate(r.createdAt)) + "</p>" +
-                    "</div></div>" +
-                    "<div>" +
-                    '<label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Palitan ang status</label>' +
-                    '<select data-id="' + esc(r.id) + '" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">' + options + "</select>" +
-                    printBtn +
-                    "</div></div>";
-            }).join("");
-        }
-
-        $("reqSearch").addEventListener("input", render);
-        $("reqFilterStatus").addEventListener("change", render);
-        $("reqFilterType").addEventListener("change", render);
-
-        /* Status change + print (event delegation) */
-        $("reqList").addEventListener("change", async (e) => {
-            const sel = e.target.closest("select[data-id]");
-            if (!sel) return;
-            const r = rowsById[sel.dataset.id];
-            if (!r) return;
-            const newStatus = sel.value;
-            sel.disabled = true;
-            try {
-                await updateDoc(doc(db, "requests", r.id), { status: newStatus });
-                showNotification("Status: " + newStatus, "success");
-                notifyResident(r, newStatus);
-            } catch (err) {
-                showNotification("Hindi na-update. I-check ang Firestore Rules.", "info");
-                sel.value = r.status || "Pending";
-            } finally {
-                sel.disabled = false;
-            }
-        });
-
-        $("reqList").addEventListener("click", (e) => {
-            const btn = e.target.closest("button[data-print]");
-            if (!btn) return;
-            const r = rowsById[btn.dataset.print];
-            if (r) printCertificate(r);
-        });
-
-        /* ---------- Live listener ---------- */
-        function startListening() {
-            if (unsub) unsub();
-            firstLoad = true;
-            newIds = new Set();
-            unsub = onSnapshot(collection(db, "requests"), (snap) => {
-                allRows = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
-                allRows.sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
-                rowsById = {};
-                allRows.forEach((r) => { rowsById[r.id] = r; });
-
-                if (!firstLoad) {
-                    let added = 0;
-                    snap.docChanges().forEach((c) => {
-                        if (c.type === "added" && !c.doc.metadata.hasPendingWrites) {
-                            newIds.add(c.doc.id);
-                            added++;
-                        }
-                    });
-                    if (added > 0) {
-                        showNotification(added === 1 ? "May bagong request!" : "May " + added + " bagong request!", "success");
-                        beep();
-                    }
-                }
-                firstLoad = false;
-                render();
-            }, () => {
-                $("reqList").innerHTML = '<div class="bg-white rounded-2xl border border-slate-200 text-center text-rose-600 text-sm py-12">Hindi nabasa ang mga request. I-check ang Firestore Rules at ang role mo.</div>';
-            });
-        }
-
-        /* ---------- Auth state + role check ---------- */
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                if (unsub) { unsub(); unsub = null; }
-                $("mainLayout").classList.add("hidden");
-                $("loginView").classList.remove("hidden");
-                return;
-            }
-
-            let profile = null;
-            try {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                profile = snap.exists() ? snap.data() : null;
-            } catch (err) {
-                profile = null;
-            }
-
-            if (!profile || (profile.role !== "admin" && profile.role !== "staff")) {
-                showNotification("Walang access ang account na ito. Para sa admin at staff lang.", "info");
-                await signOut(auth);
-                return;
-            }
-
-            const fullName = ((profile.firstName || "") + " " + (profile.lastName || "")).trim() || user.email;
-            $("currentUserName").textContent = fullName;
-            $("currentUserRole").textContent = profile.role === "admin" ? "System Admin" : "Staff";
-            $("avatarInitials").textContent = fullName.split(" ").map((w) => w.charAt(0)).join("").slice(0, 2).toUpperCase();
-
-            $("loginView").classList.add("hidden");
-            $("mainLayout").classList.remove("hidden");
-            $("loginPassword").value = "";
-            showNotification("Welcome, " + fullName + "!", "success");
-            startListening();
-        });
-    </script>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+<symbol id="out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+<symbol id="trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 11v6M14 11v6"/></symbol>
+<symbol id="print" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></symbol>
+<symbol id="send" viewBox="0 0 24 24"><path d="m22 2-11 11M22 2l-7 20-4-9-9-4z"/></symbol>
+</svg>
+
+<div id="auth">
+ <aside class="side">
+  <div><div style="display:flex;align-items:center"><div class="logo"><svg class="i"><use href="#shield"/></svg></div><span class="pill">Official Portal</span></div>
+  <h1>Barangay Resident Information System</h1>
+  <p>Request certificates and book appointments online. Staff manage every request in one place.</p></div>
+  <small style="color:#93c5fd">Resident Portal &amp; Staff Panel</small>
+ </aside>
+ <main class="formwrap"><div class="box">
+  <h2 style="margin:0;font-size:1.6rem">Welcome</h2>
+  <p class="sub">Log in or create a resident account to continue.</p>
+  <div class="tabs"><button id="tLogin" class="on" type="button">Log in</button><button id="tReg" type="button">Register</button></div>
+  <div id="fLogin">
+   <label for="lEmail">Email</label><input id="lEmail" type="email" autocomplete="email">
+   <label for="lPw">Password</label><input id="lPw" type="password" autocomplete="current-password">
+   <button id="bLogin" class="btn" type="button">Log in</button>
+   <p style="margin:12px 0 0"><button id="bForgot" class="link" type="button">Forgot password?</button></p>
+  </div>
+  <div id="fReg" class="hidden">
+   <div class="r2"><div><label for="rFirst">First name</label><input id="rFirst" autocomplete="given-name"></div><div><label for="rLast">Last name</label><input id="rLast" autocomplete="family-name"></div></div>
+   <label for="rPhone">Mobile number</label><input id="rPhone" type="tel" placeholder="09XXXXXXXXX" autocomplete="tel">
+   <label for="rAddr">Address (House No. / Street)</label><input id="rAddr" autocomplete="street-address">
+   <label for="rEmail">Email</label><input id="rEmail" type="email" autocomplete="email">
+   <div class="r2"><div><label for="rPw">Password</label><input id="rPw" type="password" autocomplete="new-password"></div><div><label for="rPw2">Confirm password</label><input id="rPw2" type="password" autocomplete="new-password"></div></div>
+   <button id="bReg" class="btn" type="button">Create account</button>
+  </div>
+  <div id="aMsg" class="msg" role="status" aria-live="polite"></div>
+  <p class="sub" style="margin-top:18px">Staff and admin: use the account provided by your barangay. You will be taken to the Staff Panel automatically.</p>
+ </div></main>
+</div>
+
+<div id="app" class="hidden">
+ <header class="top"><div class="topin">
+  <div class="logo"><svg class="i"><use href="#shield"/></svg></div>
+  <div class="who"><b id="wName">Welcome</b><span id="wSub"></span></div>
+  <button id="bTheme" class="btn sec" type="button" aria-label="Toggle dark mode"><svg class="i"><use id="themeUse" href="#moon"/></svg><span>Theme</span></button>
+  <button id="bDel" class="btn sec" type="button"><svg class="i"><use href="#trash"/></svg><span>Delete account</span></button>
+  <button id="bOut" class="btn sec" type="button"><svg class="i"><use href="#out"/></svg><span>Log out</span></button>
+ </div></header>
+
+ <div id="vRes" class="wrap cols hidden">
+  <section class="card">
+   <h2>New request</h2><p class="sub">Choose what you need.</p>
+   <div class="types" role="radiogroup" aria-label="Request type">
+    <label><input type="radio" name="rt" value="Barangay Clearance" checked><span>Barangay Clearance<small>Work, business, and more</small></span></label>
+    <label><input type="radio" name="rt" value="Certificate of Indigency"><span>Certificate of Indigency<small>Aid and scholarships</small></span></label>
+    <label><input type="radio" name="rt" value="Certificate of Residency"><span>Certificate of Residency<small>Proof of address</small></span></label>
+    <label><input type="radio" name="rt" value="Appointment"><span>Appointment<small>Pick a date and time</small></span></label>
+   </div>
+   <div id="apptBox" class="r2 hidden">
+    <div><label for="aDate">Date</label><input id="aDate" type="date"></div>
+    <div><label for="aTime">Time</label><select id="aTime"><option value="">Select time</option><option>8:00 AM</option><option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option><option>1:00 PM</option><option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option></select></div>
+   </div>
+   <label for="rPurpose" id="purposeL">Purpose</label><textarea id="rPurpose" placeholder="Example: For a job application"></textarea>
+   <button id="bSubmit" class="btn" type="button"><svg class="i"><use href="#send"/></svg>Submit request</button>
+   <div id="qMsg" class="msg" role="status" aria-live="polite"></div>
+  </section>
+  <section class="card"><h2>My requests</h2><p class="sub">Track the status of each request.</p><div id="myList" class="list"></div></section>
+ </div>
+
+ <div id="vStaff" class="wrap staff hidden">
+  <div class="stats">
+   <div class="stat"><b id="cPending">0</b><small>Pending</small></div><div class="stat"><b id="cApproved">0</b><small>Approved</small></div>
+   <div class="stat"><b id="cReleased">0</b><small>Released</small></div><div class="stat"><b id="cRejected">0</b><small>Rejected</small></div>
+  </div>
+  <div class="tools">
+   <div><label for="fQ">Search name, address, phone</label><input id="fQ" placeholder="Start typing..."></div>
+   <div><label for="fS">Status</label><select id="fS"><option value="">All</option><option>Pending</option><option>Approved</option><option>Released</option><option>Rejected</option></select></div>
+   <div><label for="fT">Request type</label><select id="fT"><option value="">All</option><option>Barangay Clearance</option><option>Certificate of Indigency</option><option>Certificate of Residency</option><option>Appointment</option></select></div>
+  </div>
+  <div id="sList" class="list"></div>
+ </div>
+</div>
+
+<div id="mDel" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="dT">
+ <div class="card">
+  <h2 id="dT">Delete your account?</h2>
+  <p class="sub">This permanently deletes your account, your profile, and all your requests. This cannot be undone.</p>
+  <label for="dPw">Enter your password to confirm</label><input id="dPw" type="password" autocomplete="current-password">
+  <div id="dMsg" class="msg e" role="alert"></div>
+  <div style="display:flex;gap:10px;margin-top:14px"><button id="dCancel" class="btn sec" type="button" style="flex:1;justify-content:center">Cancel</button><button id="dOk" class="btn danger" type="button" style="flex:1;margin:0">Delete forever</button></div>
+ </div>
+</div>
+<div id="toast" class="toast hidden" role="status"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,reauthenticateWithCredential,EmailAuthProvider,deleteUser} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,doc,setDoc,getDoc,addDoc,updateDoc,collection,query,where,onSnapshot,getDocs,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/+esm";
+
+const firebaseConfig={apiKey:"AIzaSyBuGSvWeiQmgbG6vHt1QQou-c43c1t926g",authDomain:"barangay-system-83389.firebaseapp.com",projectId:"barangay-system-83389",storageBucket:"barangay-system-83389.firebasestorage.app",messagingSenderId:"707377538631",appId:"1:707377538631:web:4fe59889fb0e91cec53362"};
+
+// ===== EmailJS: copy these values from your existing barangay-system.html and admin.html =====
+const EJ_KEY="tK6EZiFcBZ2cdw-IF", EJ_SERVICE="service_kd1iw66";
+const EJ_STAFF_TEMPLATE="template_mmcwzsb";     // email to staff on a new request (the template you already use)
+const EJ_RESIDENT_TEMPLATE="template_1twy2df";  // email to the resident on a status change
+// ===== Certificate details =====
+const BRGY="Barangay (NAME)", CITY="(Teresa), (Rizal)", CAPTAIN="(Punong Barangay Name)";
+
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const $=id=>document.getElementById(id);
+const STAT=["Pending","Approved","Released","Rejected"];
+const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+let unsub=null,registering=false,rows=[],byId={},first=true,fresh=new Set(),role="resident";
+
+function setTheme(t){document.documentElement.setAttribute("data-theme",t);$("themeUse").setAttribute("href",t==="dark"?"#sun":"#moon");try{localStorage.setItem("brisTheme",t)}catch(e){}}
+let saved=null;try{saved=localStorage.getItem("brisTheme")}catch(e){}
+setTheme(saved||(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));
+$("bTheme").onclick=()=>setTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+
+function toast(t){const e=$("toast");e.textContent=t;e.classList.remove("hidden");clearTimeout(toast.x);toast.x=setTimeout(()=>e.classList.add("hidden"),3200)}
+function msg(el,t,c){el.textContent=t;el.className="msg "+(c||"")}
+function beep(){try{const C=window.AudioContext||window.webkitAudioContext,x=new C(),o=x.createOscillator(),g=x.createGain();o.connect(g);g.connect(x.destination);o.frequency.value=880;g.gain.value=.08;o.start();o.stop(x.currentTime+.18)}catch(e){}}
+function err(e){const m={"auth/email-already-in-use":"An account with this email already exists.","auth/invalid-email":"That email address is not valid.","auth/weak-password":"Password is too weak. Use at least 6 characters.","auth/invalid-credential":"Incorrect email or password.","auth/wrong-password":"Incorrect password.","auth/user-not-found":"Incorrect email or password.","auth/too-many-requests":"Too many attempts. Try again later.","auth/network-request-failed":"No internet connection.","permission-denied":"Permission denied. Check your Firestore Rules."};return m[e.code]||"Error: "+(e.code||e.message)}
+
+function tab(l){$("fLogin").classList.toggle("hidden",!l);$("fReg").classList.toggle("hidden",l);$("tLogin").classList.toggle("on",l);$("tReg").classList.toggle("on",!l);msg($("aMsg"),"")}
+$("tLogin").onclick=()=>tab(true);$("tReg").onclick=()=>tab(false);
+
+$("bLogin").onclick=async()=>{const e=$("lEmail").value.trim(),p=$("lPw").value;if(!e||!p)return msg($("aMsg"),"Enter your email and password.","e");
+ const b=$("bLogin");b.disabled=true;msg($("aMsg"),"Logging in...");
+ try{await signInWithEmailAndPassword(auth,e,p);msg($("aMsg"),"")}catch(x){msg($("aMsg"),err(x),"e")}finally{b.disabled=false}};
+$("bForgot").onclick=async()=>{const e=$("lEmail").value.trim();if(!e)return msg($("aMsg"),"Enter your email first, then click again.","e");
+ try{await sendPasswordResetEmail(auth,e);msg($("aMsg"),"Password reset link sent to your email.","o")}catch(x){msg($("aMsg"),err(x),"e")}};
+$("bReg").onclick=async()=>{const f=$("rFirst").value.trim(),l=$("rLast").value.trim(),ph=$("rPhone").value.trim(),ad=$("rAddr").value.trim(),e=$("rEmail").value.trim(),p=$("rPw").value;
+ if(!f||!l||!ph||!ad||!e||!p)return msg($("aMsg"),"Please fill in all fields.","e");
+ if(p!==$("rPw2").value)return msg($("aMsg"),"Passwords do not match.","e");
+ const b=$("bReg");b.disabled=true;msg($("aMsg"),"Creating account...");registering=true;
+ try{const c=await createUserWithEmailAndPassword(auth,e,p);
+  await setDoc(doc(db,"users",c.user.uid),{firstName:f,lastName:l,phone:ph,address:ad,email:e,role:"resident",createdAt:serverTimestamp()});
+  registering=false;await route(c.user);msg($("aMsg"),"")}
+ catch(x){registering=false;msg($("aMsg"),err(x),"e")}finally{b.disabled=false}};
+$("bOut").onclick=()=>signOut(auth);
+
+async function route(u){
+ let p=null;try{const s=await getDoc(doc(db,"users",u.uid));p=s.exists()?s.data():null}catch(e){}
+ if(!p){toast("Account profile not found.");await signOut(auth);return}
+ role=(p.role==="admin"||p.role==="staff")?p.role:"resident";
+ const name=((p.firstName||"")+" "+(p.lastName||"")).trim()||u.email;
+ $("wName").innerHTML=esc(name)+'<span class="chip">'+(role==="admin"?"Admin":role==="staff"?"Staff":"Resident")+"</span>";
+ $("wSub").textContent=role==="resident"?(p.address||u.email):"Staff Panel";
+ $("auth").classList.add("hidden");$("app").classList.remove("hidden");
+ $("vRes").classList.toggle("hidden",role!=="resident");$("vStaff").classList.toggle("hidden",role==="resident");
+ $("lPw").value="";first=true;fresh=new Set();
+ if(role==="resident")listenMine(u.uid);else listenAll();
+}
+onAuthStateChanged(auth,u=>{
+ if(registering)return;
+ if(!u){if(unsub){unsub();unsub=null}$("app").classList.add("hidden");$("auth").classList.remove("hidden");return}
+ route(u)});
+
+function resMsg(r,s){if(s==="Approved")return r.type==="Appointment"?"Your appointment on "+r.appointmentDate+" at "+r.appointmentTime+" has been approved. Please come to the barangay hall at that time.":"Your request has been approved. We will let you know when it is ready for pickup.";
+ if(s==="Released")return"Your request is ready. You may pick it up at the barangay hall.";
+ if(s==="Rejected")return"Your request was not approved. Please contact the barangay hall for details.";return""}
+async function mail(tpl,params){if([EJ_KEY,EJ_SERVICE,tpl].includes("PALITAN_DITO"))return;try{await emailjs.send(EJ_SERVICE,tpl,params,{publicKey:EJ_KEY})}catch(e){console.error("EMAIL ERROR:",e&&(e.text||e.message||e))}}
+
+const sel=()=>document.querySelector('input[name=rt]:checked').value;
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().split("T")[0]};
+function mode(){const a=sel()==="Appointment";$("apptBox").classList.toggle("hidden",!a);$("purposeL").textContent=a?"Reason for appointment":"Purpose";$("rPurpose").placeholder=a?"Example: Request for a blotter, ID assistance":"Example: For a job application"}
+document.querySelectorAll("input[name=rt]").forEach(r=>r.onchange=mode);$("aDate").min=today();mode();
+
+$("bSubmit").onclick=async()=>{const u=auth.currentUser;if(!u)return;const t=sel(),pu=$("rPurpose").value.trim(),d=$("aDate").value,tm=$("aTime").value;
+ if(!pu)return msg($("qMsg"),"Please enter the purpose of your request.","e");
+ if(t==="Appointment"){if(!d||!tm)return msg($("qMsg"),"Select a date and time.","e");if(d<today())return msg($("qMsg"),"That date has already passed.","e");
+  const w=new Date(d+"T00:00:00").getDay();if(w===0||w===6)return msg($("qMsg"),"Appointments are Monday to Friday only.","e")}
+ const b=$("bSubmit");b.disabled=true;msg($("qMsg"),"Submitting...");
+ try{const s=await getDoc(doc(db,"users",u.uid)),p=s.exists()?s.data():{},nm=((p.firstName||"")+" "+(p.lastName||"")).trim();
+  await addDoc(collection(db,"requests"),{uid:u.uid,type:t,purpose:pu,appointmentDate:t==="Appointment"?d:"",appointmentTime:t==="Appointment"?tm:"",residentName:nm,phone:p.phone||"",address:p.address||"",email:u.email||"",status:"Pending",createdAt:serverTimestamp()});
+  mail(EJ_STAFF_TEMPLATE,{request_type:t,resident_name:nm,purpose:pu,schedule:t==="Appointment"?d+", "+tm:"None",phone:p.phone||"",address:p.address||"",resident_email:u.email||""});
+  $("rPurpose").value="";$("aDate").value="";$("aTime").value="";msg($("qMsg"),"Request submitted! Track it under My requests.","o")}
+ catch(x){msg($("qMsg"),err(x),"e")}finally{b.disabled=false}};
+
+const ms=t=>t&&t.toMillis?t.toMillis():Date.now();
+const fd=t=>t&&t.toDate?t.toDate().toLocaleString("en-US",{year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"";
+function listenMine(uid){if(unsub)unsub();
+ unsub=onSnapshot(query(collection(db,"requests"),where("uid","==",uid)),s=>{
+  const a=s.docs.map(d=>d.data()).sort((x,y)=>ms(y.createdAt)-ms(x.createdAt)),l=$("myList");
+  l.innerHTML=a.length?a.map(r=>{const st=r.status||"Pending";return'<div class="item '+st+'"><div><span class="badge s-'+st+'">'+st+"</span><h4>"+esc(r.type)+"</h4>"+
+   (r.type==="Appointment"&&r.appointmentDate?"<p><b>Schedule:</b> "+esc(r.appointmentDate)+", "+esc(r.appointmentTime)+"</p>":"")+"<p>"+esc(r.purpose)+"</p><p>Submitted "+esc(fd(r.createdAt))+"</p></div></div>"}).join(""):'<div class="empty">No requests yet. Submit your first one on the left.</div>'},
+  ()=>{$("myList").innerHTML='<div class="empty">Could not load requests. Check your Firestore Rules.</div>'})}
+
+function render(){
+ STAT.forEach(s=>$("c"+s).textContent=rows.filter(r=>(r.status||"Pending")===s).length);
+ const fs=$("fS").value,ft=$("fT").value,q=$("fQ").value.trim().toLowerCase();
+ const a=rows.filter(r=>{const st=r.status||"Pending";if(fs&&st!==fs)return false;if(ft&&r.type!==ft)return false;
+  if(q&&!((r.residentName||"")+" "+(r.address||"")+" "+(r.phone||"")+" "+(r.email||"")).toLowerCase().includes(q))return false;return true});
+ $("sList").innerHTML=a.length?a.map(r=>{const st=r.status||"Pending";
+  return'<div class="item '+st+(fresh.has(r.id)?" fresh":"")+'"><div><span class="badge s-'+st+'">'+st+"</span><h4>"+esc(r.type)+" - "+esc(r.residentName||"No name")+"</h4>"+
+  (r.type==="Appointment"&&r.appointmentDate?"<p><b>Schedule:</b> "+esc(r.appointmentDate)+", "+esc(r.appointmentTime)+"</p>":"")+
+  "<p><b>Purpose:</b> "+esc(r.purpose)+"</p><p><b>Phone:</b> "+esc(r.phone)+"</p><p><b>Address:</b> "+esc(r.address)+"</p><p><b>Email:</b> "+esc(r.email)+"</p><p>Submitted "+esc(fd(r.createdAt))+"</p></div>"+
+  '<div><label style="margin-top:0">Update status</label><select data-id="'+esc(r.id)+'">'+STAT.map(s=>'<option'+(s===st?" selected":"")+">"+s+"</option>").join("")+"</select>"+
+  (r.type!=="Appointment"?'<button class="pbtn" data-p="'+esc(r.id)+'" type="button"><svg class="i"><use href="#print"/></svg>Print certificate</button>':"")+"</div></div>"}).join(""):
+  '<div class="empty">'+(rows.length?"No requests match your filters.":"No requests yet.")+"</div>"}
+["fQ","fS","fT"].forEach(i=>$(i).addEventListener(i==="fQ"?"input":"change",render));
+$("sList").addEventListener("change",async e=>{const s=e.target.closest("select[data-id]");if(!s)return;const r=byId[s.dataset.id];if(!r)return;const v=s.value;s.disabled=true;
+ try{await updateDoc(doc(db,"requests",r.id),{status:v});toast("Status updated to "+v);
+  if(v!=="Pending"&&r.email)mail(EJ_RESIDENT_TEMPLATE,{to_email:r.email,resident_name:r.residentName||"Resident",request_type:r.type,status:v,message:resMsg(r,v)})}
+ catch(x){toast("Could not update. Check your Firestore Rules.");s.value=r.status||"Pending"}finally{s.disabled=false}});
+$("sList").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(b&&byId[b.dataset.p])cert(byId[b.dataset.p])});
+function listenAll(){if(unsub)unsub();
+ unsub=onSnapshot(collection(db,"requests"),s=>{
+  rows=s.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>ms(b.createdAt)-ms(a.createdAt));byId={};rows.forEach(r=>byId[r.id]=r);
+  if(!first){let n=0;s.docChanges().forEach(c=>{if(c.type==="added"&&!c.doc.metadata.hasPendingWrites){fresh.add(c.doc.id);n++}});if(n){toast(n===1?"New request received!":n+" new requests received!");beep()}}
+  first=false;render()},()=>{$("sList").innerHTML='<div class="empty">Could not load requests. Check your Firestore Rules and your account role.</div>'})}
+
+function cert(r){const n=esc(r.residentName),a=esc(r.address),p=esc(r.purpose);let t,b;
+ if(r.type==="Barangay Clearance"){t="BARANGAY CLEARANCE";b="This is to certify that <b>"+n+"</b>, residing at "+a+", is a resident of this barangay and has no derogatory record on file in this office as of this date. This clearance is issued for the purpose of: <b>"+p+"</b>."}
+ else if(r.type==="Certificate of Indigency"){t="CERTIFICATE OF INDIGENCY";b="This is to certify that <b>"+n+"</b>, residing at "+a+", is a resident of this barangay and belongs to an indigent family in our community. This certificate is issued for the purpose of: <b>"+p+"</b>."}
+ else{t="CERTIFICATE OF RESIDENCY";b="This is to certify that <b>"+n+"</b> is a bona fide resident of "+a+", within the jurisdiction of this barangay. This certificate is issued for the purpose of: <b>"+p+"</b>."}
+ const d=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
+ const h="<!DOCTYPE html><html><head><meta charset='UTF-8'><title>"+t+"</title><style>@page{size:A4;margin:20mm}body{font-family:'Times New Roman',serif;color:#000;line-height:1.7}.hd{text-align:center;border-bottom:3px double #000;padding-bottom:12px;margin-bottom:36px}.hd p{margin:0;font-size:14px}.hd h1{margin:4px 0;font-size:22px}h2{text-align:center;font-size:24px;letter-spacing:2px;margin:0 0 32px}.bd{text-align:justify;text-indent:48px;font-size:17px}.dt{margin-top:28px;font-size:17px}.sg{margin-top:90px;text-align:right}.sg span{display:inline-block;min-width:260px;border-top:1px solid #000;text-align:center;padding-top:4px;font-weight:bold}.sg small{display:block}</style></head><body><div class='hd'><p>Republic of the Philippines</p><p>"+esc(CITY)+"</p><h1>"+esc(BRGY)+"</h1><p>Office of the Punong Barangay</p></div><h2>"+t+"</h2><p class='bd'>"+b+"</p><p class='dt'>Issued this "+d+" at "+esc(BRGY)+".</p><div class='sg'><span>"+esc(CAPTAIN)+"<small>Punong Barangay</small></span></div></body></html>";
+ const w=window.open("","_blank");if(!w){toast("Pop-up blocked. Please allow pop-ups.");return}
+ w.document.open();w.document.write(h);w.document.close();w.focus();setTimeout(()=>w.print(),400)}
+
+$("bDel").onclick=()=>{$("dPw").value="";msg($("dMsg"),"","e");$("mDel").classList.remove("hidden");$("dPw").focus()};
+$("dCancel").onclick=()=>$("mDel").classList.add("hidden");
+$("dOk").onclick=async()=>{const u=auth.currentUser,pw=$("dPw").value;if(!u)return;if(!pw)return msg($("dMsg"),"Enter your password.","e");
+ const b=$("dOk");b.disabled=true;msg($("dMsg"),"");
+ try{await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,pw));
+  if(unsub){unsub();unsub=null}
+  const q=await getDocs(query(collection(db,"requests"),where("uid","==",u.uid)));
+  let bt=writeBatch(db),n=0;
+  for(const d of q.docs){bt.delete(d.ref);if(++n===400){await bt.commit();bt=writeBatch(db);n=0}}
+  bt.delete(doc(db,"users",u.uid));await bt.commit();
+  await deleteUser(u);
+  $("mDel").classList.add("hidden");toast("Your account has been deleted.")}
+ catch(x){msg($("dMsg"),err(x),"e")}finally{b.disabled=false}};
+</script>
 </body>
 </html>

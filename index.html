@@ -107,12 +107,12 @@
 
                     <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Username</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Email</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
                                     <i class="fa-regular fa-user"></i>
                                 </span>
-                                <input type="text" id="loginUsername" required value="admin" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition" placeholder="Enter username">
+                                <input type="text" id="loginUsername" required class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition" placeholder="Enter email">
                             </div>
                         </div>
 
@@ -122,7 +122,7 @@
                                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
                                     <i class="fa-solid fa-lock"></i>
                                 </span>
-                                <input type="password" id="loginPassword" required value="admin123" class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition" placeholder="Enter password">
+                                <input type="password" id="loginPassword" required class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition" placeholder="Enter password">
                                 <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
                                     <i class="fa-regular fa-eye" id="passwordEye"></i>
                                 </button>
@@ -166,6 +166,12 @@
                     <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn active w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800/80 hover:text-white">
                         <i class="fa-solid fa-chart-pie w-5 text-center text-sm"></i>
                         <span>Dashboard</span>
+                    </button>
+
+                    <button onclick="switchView('requests')" id="nav-requests" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800/80 hover:text-white">
+                        <i class="fa-solid fa-inbox w-5 text-center text-sm"></i>
+                        <span class="flex-1 text-left">Requests</span>
+                        <span id="reqBadge" class="hidden bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
                     </button>
 
                     <button onclick="switchView('residents')" id="nav-residents" class="nav-btn w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-semibold transition-all text-slate-300 hover:bg-slate-800/80 hover:text-white">
@@ -220,12 +226,12 @@
                         </button>
 
                         <div class="flex items-center space-x-3 pl-6 border-l border-slate-800">
-                            <div class="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-brand-500/30">
+                            <div id="avatarInitials" class="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-brand-500/30">
                                 AA
                             </div>
                             <div class="text-left leading-none">
                                 <div id="currentUserName" class="text-xs font-bold text-white">Admin Administrator</div>
-                                <div class="text-[10px] text-slate-400 font-medium mt-1">System Admin</div>
+                                <div id="currentUserRole" class="text-[10px] text-slate-400 font-medium mt-1">System Admin</div>
                             </div>
                         </div>
                     </div>
@@ -263,7 +269,7 @@
                                 </div>
                                 <div>
                                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Certificates Issued</p>
-                                    <h3 class="text-3xl font-extrabold text-slate-900 mt-1">356</h3>
+                                    <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="statCerts">0</h3>
                                 </div>
                             </div>
 
@@ -319,6 +325,51 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- ================= RESIDENT REQUESTS VIEW ================= -->
+                    <div id="view-requests" class="view-content hidden space-y-5">
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pending</p>
+                                <h3 class="text-3xl font-extrabold text-amber-600 mt-1" id="cPending">0</h3>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Approved</p>
+                                <h3 class="text-3xl font-extrabold text-emerald-600 mt-1" id="cApproved">0</h3>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Released</p>
+                                <h3 class="text-3xl font-extrabold text-brand-600 mt-1" id="cReleased">0</h3>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rejected</p>
+                                <h3 class="text-3xl font-extrabold text-rose-600 mt-1" id="cRejected">0</h3>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                            <div class="relative flex-1 min-w-[220px]">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input type="text" id="reqSearch" placeholder="Hanapin ang pangalan, address, o phone..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                            </div>
+                            <select id="reqFilterStatus" class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="">Lahat ng Status</option>
+                                <option>Pending</option>
+                                <option>Approved</option>
+                                <option>Released</option>
+                                <option>Rejected</option>
+                            </select>
+                            <select id="reqFilterType" class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="">Lahat ng Uri</option>
+                                <option>Barangay Clearance</option>
+                                <option>Certificate of Indigency</option>
+                                <option>Certificate of Residency</option>
+                                <option>Appointment</option>
+                            </select>
+                        </div>
+
+                        <div id="reqList" class="space-y-3"></div>
                     </div>
 
                     <!-- ================= RESIDENT RECORDS VIEW ================= -->
@@ -1233,6 +1284,395 @@
                 toast.classList.add('translate-y-24', 'opacity-0');
             }, 3000);
         }
+    </script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import {
+            getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+        import {
+            getFirestore, doc, getDoc, updateDoc, collection, onSnapshot
+        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+        import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/+esm";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBuGSvWeiQmgbG6vHt1QQou-c43c1t926g",
+            authDomain: "barangay-system-83389.firebaseapp.com",
+            projectId: "barangay-system-83389",
+            storageBucket: "barangay-system-83389.firebasestorage.app",
+            messagingSenderId: "707377538631",
+            appId: "1:707377538631:web:4fe59889fb0e91cec53362"
+        };
+
+        // ====== EMAIL SA RESIDENTE (EmailJS) ======
+        // Kopyahin ang tatlong value na ito mula sa dati niyong admin.html (EMAIL SA RESIDENTE).
+        const EMAILJS_PUBLIC_KEY = "tK6EZiFcBZ2cdw-IF";
+        const EMAILJS_SERVICE_ID = "service_kd1iw66";
+        const EMAILJS_RESIDENT_TEMPLATE_ID = "template_1twy2df";
+        // ==========================================
+
+        // ====== PARA SA CERTIFICATE ======
+        const BARANGAY_NAME = "Barangay (PANGALAN)";
+        const CITY_PROVINCE = "(Lungsod/Bayan), (Probinsya)";
+        const CAPTAIN_NAME = "(Pangalan ng Punong Barangay)";
+        // =================================
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const $ = (id) => document.getElementById(id);
+        const STATUSES = ["Pending", "Approved", "Released", "Rejected"];
+        const BADGE = {
+            Pending: "bg-amber-100 text-amber-800",
+            Approved: "bg-emerald-100 text-emerald-800",
+            Released: "bg-blue-100 text-blue-800",
+            Rejected: "bg-rose-100 text-rose-800"
+        };
+        const BORDER = {
+            Pending: "border-l-amber-400",
+            Approved: "border-l-emerald-500",
+            Released: "border-l-blue-500",
+            Rejected: "border-l-rose-500"
+        };
+
+        let unsub = null;
+        let allRows = [];
+        let rowsById = {};
+        let firstLoad = true;
+        let newIds = new Set();
+
+        function esc(s) {
+            return String(s == null ? "" : s)
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        /* ---------- Login / Logout ---------- */
+        window.handleLogin = async function (e) {
+            e.preventDefault();
+            const email = $("loginUsername").value.trim();
+            const pw = $("loginPassword").value;
+            if (!email || !pw) {
+                showNotification("Ilagay ang email at password.", "info");
+                return;
+            }
+            try {
+                await signInWithEmailAndPassword(auth, email, pw);
+            } catch (err) {
+                showNotification("Mali ang email o password.", "info");
+            }
+        };
+
+        window.handleLogout = function () {
+            signOut(auth);
+        };
+
+        /* ---------- Page title for Requests view ---------- */
+        const originalSwitchView = window.switchView;
+        window.switchView = function (viewName) {
+            originalSwitchView(viewName);
+            if (viewName === "requests") {
+                $("pageTitle").innerText = "Resident Requests";
+            }
+        };
+
+        /* ---------- Sound ---------- */
+        function beep() {
+            try {
+                const Ctx = window.AudioContext || window.webkitAudioContext;
+                const ctx = new Ctx();
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.connect(g);
+                g.connect(ctx.destination);
+                o.frequency.value = 880;
+                g.gain.value = 0.08;
+                o.start();
+                o.stop(ctx.currentTime + 0.18);
+            } catch (e) {
+                // Walang tunog, okay lang.
+            }
+        }
+
+        /* ---------- Email sa residente ---------- */
+        function statusMessage(r, status) {
+            if (status === "Approved") {
+                return r.type === "Appointment"
+                    ? "Naaprubahan na ang iyong appointment sa " + r.appointmentDate + ", " + r.appointmentTime + ". Pumunta sa barangay hall sa oras na iyon."
+                    : "Naaprubahan na ang iyong request. Hintayin ang abiso kung kailan ito pwedeng kunin.";
+            }
+            if (status === "Released") {
+                return "Handa na ang iyong request. Pwede mo na itong kunin sa barangay hall.";
+            }
+            if (status === "Rejected") {
+                return "Hindi naaprubahan ang iyong request. Makipag-ugnayan sa barangay hall para sa detalye.";
+            }
+            return "";
+        }
+
+        async function notifyResident(r, status) {
+            if (status === "Pending") return;
+            if (EMAILJS_PUBLIC_KEY === "PALITAN_DITO" || EMAILJS_SERVICE_ID === "PALITAN_DITO" || EMAILJS_RESIDENT_TEMPLATE_ID === "PALITAN_DITO") {
+                console.warn("EMAIL: hindi pa napalitan ang PALITAN_DITO");
+                return;
+            }
+            if (!r.email) {
+                console.warn("EMAIL: walang email ang request na ito");
+                return;
+            }
+            try {
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_RESIDENT_TEMPLATE_ID, {
+                    to_email: r.email,
+                    resident_name: r.residentName || "Residente",
+                    request_type: r.type,
+                    status: status,
+                    message: statusMessage(r, status)
+                }, { publicKey: EMAILJS_PUBLIC_KEY });
+                console.log("EMAIL: naipadala kay " + r.email);
+            } catch (err) {
+                console.error("EMAIL ERROR:", err && (err.text || err.message || err));
+            }
+        }
+
+        /* ---------- Print certificate ---------- */
+        function printCertificate(r) {
+            const name = esc(r.residentName || "");
+            const address = esc(r.address || "");
+            const purpose = esc(r.purpose || "");
+            const today = new Date().toLocaleDateString("fil-PH", { year: "numeric", month: "long", day: "numeric" });
+
+            let title = "";
+            let body = "";
+            if (r.type === "Barangay Clearance") {
+                title = "BARANGAY CLEARANCE";
+                body = "Ito ay nagpapatunay na si <b>" + name + "</b>, naninirahan sa " + address +
+                    ", ay isang residente ng barangay na ito at walang naitalang negatibong rekord sa aming tanggapan sa araw na ito. " +
+                    "Ang clearance na ito ay inilalabas para sa layuning: <b>" + purpose + "</b>.";
+            } else if (r.type === "Certificate of Indigency") {
+                title = "CERTIFICATE OF INDIGENCY";
+                body = "Ito ay nagpapatunay na si <b>" + name + "</b>, naninirahan sa " + address +
+                    ", ay isang residente ng barangay na ito at kabilang sa mga mahihirap na pamilya sa aming komunidad. " +
+                    "Ang sertipikong ito ay inilalabas para sa layuning: <b>" + purpose + "</b>.";
+            } else {
+                title = "CERTIFICATE OF RESIDENCY";
+                body = "Ito ay nagpapatunay na si <b>" + name + "</b> ay totoong naninirahan sa " + address +
+                    " sa loob ng nasasakupan ng barangay na ito. " +
+                    "Ang sertipikong ito ay inilalabas para sa layuning: <b>" + purpose + "</b>.";
+            }
+
+            const html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>" + title + "</title>" +
+                "<style>" +
+                "@page { size: A4; margin: 20mm; }" +
+                "body { font-family: 'Times New Roman', Times, serif; color: #000; line-height: 1.7; }" +
+                ".head { text-align: center; border-bottom: 3px double #000; padding-bottom: 12px; margin-bottom: 36px; }" +
+                ".head p { margin: 0; font-size: 14px; }" +
+                ".head h1 { margin: 4px 0; font-size: 22px; }" +
+                "h2 { text-align: center; font-size: 24px; letter-spacing: 2px; margin: 0 0 32px; }" +
+                "p.body { text-align: justify; text-indent: 48px; font-size: 17px; }" +
+                ".date { margin-top: 28px; font-size: 17px; }" +
+                ".sign { margin-top: 90px; text-align: right; }" +
+                ".sign .line { display: inline-block; min-width: 260px; border-top: 1px solid #000; text-align: center; padding-top: 4px; font-weight: bold; }" +
+                ".sign small { display: block; text-align: center; }" +
+                "</style></head><body>" +
+                "<div class='head'><p>Republika ng Pilipinas</p><p>" + esc(CITY_PROVINCE) + "</p><h1>" + esc(BARANGAY_NAME) + "</h1><p>Tanggapan ng Punong Barangay</p></div>" +
+                "<h2>" + title + "</h2>" +
+                "<p class='body'>" + body + "</p>" +
+                "<p class='date'>Inilabas ngayong " + today + " sa " + esc(BARANGAY_NAME) + ".</p>" +
+                "<div class='sign'><span class='line'>" + esc(CAPTAIN_NAME) + "<small>Punong Barangay</small></span></div>" +
+                "</body></html>";
+
+            const w = window.open("", "_blank");
+            if (!w) {
+                showNotification("Na-block ang bagong window. Payagan ang pop-ups.", "info");
+                return;
+            }
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+            setTimeout(() => w.print(), 400);
+        }
+
+        /* ---------- Render requests ---------- */
+        function ms(ts) {
+            return ts && ts.toMillis ? ts.toMillis() : Date.now();
+        }
+
+        function fmtDate(ts) {
+            if (!ts || !ts.toDate) return "";
+            return ts.toDate().toLocaleString("fil-PH", {
+                year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+            });
+        }
+
+        function updateCounts() {
+            STATUSES.forEach((s) => {
+                $("c" + s).textContent = allRows.filter((r) => (r.status || "Pending") === s).length;
+            });
+            const pending = allRows.filter((r) => (r.status || "Pending") === "Pending").length;
+            const badge = $("reqBadge");
+            badge.textContent = pending;
+            badge.classList.toggle("hidden", pending === 0);
+
+            const certs = allRows.filter((r) => r.status === "Released" && r.type !== "Appointment").length;
+            $("statCerts").textContent = certs.toLocaleString();
+        }
+
+        function render() {
+            updateCounts();
+
+            const fs = $("reqFilterStatus").value;
+            const ft = $("reqFilterType").value;
+            const q = $("reqSearch").value.trim().toLowerCase();
+
+            const rows = allRows.filter((r) => {
+                const status = r.status || "Pending";
+                if (fs && status !== fs) return false;
+                if (ft && r.type !== ft) return false;
+                if (q) {
+                    const hay = ((r.residentName || "") + " " + (r.address || "") + " " + (r.phone || "") + " " + (r.email || "")).toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+
+            const list = $("reqList");
+
+            if (rows.length === 0) {
+                list.innerHTML = '<div class="bg-white rounded-2xl border border-dashed border-slate-300 text-center text-slate-400 text-sm py-12">' +
+                    (allRows.length === 0 ? "Wala pang request." : "Walang request na tumutugma sa filter.") + "</div>";
+                return;
+            }
+
+            list.innerHTML = rows.map((r) => {
+                const status = r.status || "Pending";
+                const isFresh = newIds.has(r.id);
+                const sched = (r.type === "Appointment" && r.appointmentDate)
+                    ? '<p class="text-xs text-slate-600"><b>Iskedyul:</b> ' + esc(r.appointmentDate) + ", " + esc(r.appointmentTime) + "</p>"
+                    : "";
+                const options = STATUSES.map((s) =>
+                    '<option value="' + s + '"' + (s === status ? " selected" : "") + ">" + s + "</option>"
+                ).join("");
+                const printBtn = r.type !== "Appointment"
+                    ? '<button type="button" data-print="' + esc(r.id) + '" class="mt-2 w-full py-2 border border-brand-600 text-brand-600 hover:bg-brand-50 rounded-xl text-xs font-bold transition"><i class="fa-solid fa-print mr-1"></i> I-print ang certificate</button>'
+                    : "";
+
+                return '<div class="' + (isFresh ? "bg-amber-50 " : "bg-white ") + 'rounded-2xl border border-slate-200/80 border-l-4 ' + BORDER[status] + ' shadow-sm p-5 grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4">' +
+                    "<div>" +
+                    '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold ' + BADGE[status] + '">' + status + "</span>" +
+                    '<h3 class="font-bold text-slate-900 text-sm mt-2">' + esc(r.type) + " - " + esc(r.residentName || "Walang pangalan") + "</h3>" +
+                    '<div class="mt-1 space-y-0.5">' + sched +
+                    '<p class="text-xs text-slate-600"><b>Dahilan:</b> ' + esc(r.purpose) + "</p>" +
+                    '<p class="text-xs text-slate-500"><b>Phone:</b> ' + esc(r.phone) + "</p>" +
+                    '<p class="text-xs text-slate-500"><b>Address:</b> ' + esc(r.address) + "</p>" +
+                    '<p class="text-xs text-slate-500"><b>Email:</b> ' + esc(r.email) + "</p>" +
+                    '<p class="text-xs text-slate-400">Isinumite: ' + esc(fmtDate(r.createdAt)) + "</p>" +
+                    "</div></div>" +
+                    "<div>" +
+                    '<label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Palitan ang status</label>' +
+                    '<select data-id="' + esc(r.id) + '" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">' + options + "</select>" +
+                    printBtn +
+                    "</div></div>";
+            }).join("");
+        }
+
+        $("reqSearch").addEventListener("input", render);
+        $("reqFilterStatus").addEventListener("change", render);
+        $("reqFilterType").addEventListener("change", render);
+
+        /* Status change + print (event delegation) */
+        $("reqList").addEventListener("change", async (e) => {
+            const sel = e.target.closest("select[data-id]");
+            if (!sel) return;
+            const r = rowsById[sel.dataset.id];
+            if (!r) return;
+            const newStatus = sel.value;
+            sel.disabled = true;
+            try {
+                await updateDoc(doc(db, "requests", r.id), { status: newStatus });
+                showNotification("Status: " + newStatus, "success");
+                notifyResident(r, newStatus);
+            } catch (err) {
+                showNotification("Hindi na-update. I-check ang Firestore Rules.", "info");
+                sel.value = r.status || "Pending";
+            } finally {
+                sel.disabled = false;
+            }
+        });
+
+        $("reqList").addEventListener("click", (e) => {
+            const btn = e.target.closest("button[data-print]");
+            if (!btn) return;
+            const r = rowsById[btn.dataset.print];
+            if (r) printCertificate(r);
+        });
+
+        /* ---------- Live listener ---------- */
+        function startListening() {
+            if (unsub) unsub();
+            firstLoad = true;
+            newIds = new Set();
+            unsub = onSnapshot(collection(db, "requests"), (snap) => {
+                allRows = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
+                allRows.sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
+                rowsById = {};
+                allRows.forEach((r) => { rowsById[r.id] = r; });
+
+                if (!firstLoad) {
+                    let added = 0;
+                    snap.docChanges().forEach((c) => {
+                        if (c.type === "added" && !c.doc.metadata.hasPendingWrites) {
+                            newIds.add(c.doc.id);
+                            added++;
+                        }
+                    });
+                    if (added > 0) {
+                        showNotification(added === 1 ? "May bagong request!" : "May " + added + " bagong request!", "success");
+                        beep();
+                    }
+                }
+                firstLoad = false;
+                render();
+            }, () => {
+                $("reqList").innerHTML = '<div class="bg-white rounded-2xl border border-slate-200 text-center text-rose-600 text-sm py-12">Hindi nabasa ang mga request. I-check ang Firestore Rules at ang role mo.</div>';
+            });
+        }
+
+        /* ---------- Auth state + role check ---------- */
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                if (unsub) { unsub(); unsub = null; }
+                $("mainLayout").classList.add("hidden");
+                $("loginView").classList.remove("hidden");
+                return;
+            }
+
+            let profile = null;
+            try {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                profile = snap.exists() ? snap.data() : null;
+            } catch (err) {
+                profile = null;
+            }
+
+            if (!profile || (profile.role !== "admin" && profile.role !== "staff")) {
+                showNotification("Walang access ang account na ito. Para sa admin at staff lang.", "info");
+                await signOut(auth);
+                return;
+            }
+
+            const fullName = ((profile.firstName || "") + " " + (profile.lastName || "")).trim() || user.email;
+            $("currentUserName").textContent = fullName;
+            $("currentUserRole").textContent = profile.role === "admin" ? "System Admin" : "Staff";
+            $("avatarInitials").textContent = fullName.split(" ").map((w) => w.charAt(0)).join("").slice(0, 2).toUpperCase();
+
+            $("loginView").classList.add("hidden");
+            $("mainLayout").classList.remove("hidden");
+            $("loginPassword").value = "";
+            showNotification("Welcome, " + fullName + "!", "success");
+            startListening();
+        });
     </script>
 </body>
 </html>

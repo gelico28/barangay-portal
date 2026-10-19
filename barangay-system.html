@@ -4,125 +4,305 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resident Portal - Barangay Resident Information System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #eef3f1;
-    --card: #ffffff;
-    --ink: #17302a;
-    --muted: #5d7770;
-    --line: #cfdcd7;
-    --brand: #0f6b57;
-    --brand-dark: #0a4d3f;
+    --paper: #f5f1e8;
+    --card: #fffdf8;
+    --ink: #1d2b27;
+    --muted: #66746f;
+    --line: #ddd5c3;
+    --brand: #14574a;
+    --brand-dark: #0d3d34;
+    --brand-soft: #e1efe9;
+    --gold: #c8962e;
     --error: #b3261e;
-    --ok: #0f6b57;
+    --ok: #14574a;
+    --pending-bg: #fbefd0;  --pending-ink: #7a5600;
+    --approved-bg: #dcefe5; --approved-ink: #14574a;
+    --released-bg: #dde7f6; --released-ink: #1f4a85;
+    --rejected-bg: #f6dcda; --rejected-ink: #8f2019;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0;
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-    background: var(--bg);
+    font-family: "Public Sans", "Segoe UI", Tahoma, Arial, sans-serif;
+    background: var(--paper);
     color: var(--ink);
     min-height: 100vh;
+    line-height: 1.5;
+  }
+  .hidden { display: none !important; }
+
+  /* ---------- AUTH ---------- */
+  .auth-wrap {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .auth-side {
+    background: var(--brand);
+    color: #f5f1e8;
+    padding: 56px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 6px solid var(--gold);
+  }
+  .auth-side h1 {
+    font-size: 2.4rem;
+    line-height: 1.15;
+    margin: 0 0 16px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .auth-side p { margin: 0; max-width: 34ch; color: #cfe3da; font-size: 1.02rem; }
+  .auth-side small { color: #a9c8bc; }
+  .auth-main {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 32px 20px;
   }
-  .box {
-    width: 100%;
-    max-width: 440px;
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 28px 24px;
-  }
-  h1 { font-size: 1.35rem; margin: 0 0 4px; }
-  .sub { color: var(--muted); font-size: .92rem; margin: 0 0 20px; }
-  .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .box { width: 100%; max-width: 420px; }
+  .box h2 { font-size: 1.5rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: .95rem; }
+
+  .tabs { display: flex; border-bottom: 2px solid var(--line); margin-bottom: 20px; }
   .tabs button {
-    flex: 1; padding: 10px; border: 1px solid var(--line);
-    background: #fff; color: var(--ink); border-radius: 8px;
-    font-size: .95rem; cursor: pointer;
+    flex: 1; padding: 11px; border: 0; background: none;
+    color: var(--muted); font: inherit; font-weight: 600; cursor: pointer;
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
   }
-  .tabs button.active { background: var(--brand); border-color: var(--brand); color: #fff; }
-  label { display: block; font-size: .88rem; margin: 12px 0 4px; }
-  input {
-    width: 100%; padding: 10px 12px; border: 1px solid var(--line);
-    border-radius: 8px; font-size: 1rem; font-family: inherit;
+  .tabs button.active { color: var(--brand); border-bottom-color: var(--brand); }
+
+  label { display: block; font-size: .86rem; font-weight: 600; margin: 14px 0 5px; }
+  input, select, textarea {
+    width: 100%; padding: 11px 12px; border: 1.5px solid var(--line);
+    border-radius: 8px; font: inherit; background: #fff; color: var(--ink);
   }
-  input:focus-visible, button:focus-visible {
-    outline: 3px solid #86c9b8; outline-offset: 1px;
+  textarea { resize: vertical; min-height: 84px; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible,
+  button:focus-visible, .types input:focus-visible + span {
+    outline: 3px solid #8cc5b5; outline-offset: 1px;
   }
-  .submit {
-    width: 100%; margin-top: 20px; padding: 12px; border: 0;
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .btn {
+    width: 100%; margin-top: 22px; padding: 13px; border: 0;
     background: var(--brand); color: #fff; border-radius: 8px;
-    font-size: 1rem; cursor: pointer;
+    font: inherit; font-weight: 600; cursor: pointer;
   }
-  .submit:hover { background: var(--brand-dark); }
-  .submit:disabled { opacity: .6; cursor: wait; }
-  .msg { margin-top: 14px; font-size: .9rem; min-height: 1.2em; }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { opacity: .6; cursor: wait; }
+  .btn.ghost {
+    background: transparent; color: var(--brand);
+    border: 1.5px solid var(--brand); width: auto; margin: 0; padding: 8px 16px;
+  }
+  .btn.ghost:hover { background: var(--brand-soft); }
+  .link { background: none; border: 0; color: var(--brand); cursor: pointer; padding: 0; font: inherit; font-size: .9rem; text-decoration: underline; }
+  .msg { margin-top: 14px; font-size: .9rem; min-height: 1.3em; }
   .msg.error { color: var(--error); }
   .msg.ok { color: var(--ok); }
-  .hidden { display: none; }
-  .welcome p { margin: 6px 0; }
-  .link { background: none; border: 0; color: var(--brand); cursor: pointer; padding: 0; font-size: .9rem; text-decoration: underline; }
+
+  /* ---------- PORTAL ---------- */
+  .topbar {
+    background: var(--brand);
+    color: #f5f1e8;
+    border-bottom: 4px solid var(--gold);
+  }
+  .topbar-in {
+    max-width: 1080px; margin: 0 auto; padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .topbar strong { font-size: 1.05rem; }
+  .topbar span { color: #bcd8cd; font-size: .88rem; display: block; }
+  .topbar .btn.ghost { color: #f5f1e8; border-color: #8fb8aa; }
+  .topbar .btn.ghost:hover { background: #1d6a5b; }
+
+  .portal {
+    max-width: 1080px; margin: 0 auto; padding: 28px 20px 60px;
+    display: grid; grid-template-columns: 1.05fr 1fr; gap: 28px; align-items: start;
+  }
+  .panel {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 24px;
+  }
+  .panel h3 { margin: 0 0 4px; font-size: 1.2rem; }
+
+  .types { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+  .types label { margin: 0; font-weight: 500; cursor: pointer; }
+  .types input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .types span {
+    display: block; padding: 12px; border: 1.5px solid var(--line);
+    border-radius: 8px; background: #fff; font-size: .92rem; line-height: 1.3;
+  }
+  .types span small { display: block; color: var(--muted); font-size: .78rem; margin-top: 3px; font-weight: 400; }
+  .types input:checked + span {
+    border-color: var(--brand); background: var(--brand-soft); font-weight: 600;
+  }
+
+  .list { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+  .item {
+    border: 1px solid var(--line); border-left: 5px solid var(--line);
+    border-radius: 8px; padding: 12px 14px; background: #fff;
+  }
+  .item.Pending { border-left-color: var(--gold); }
+  .item.Approved { border-left-color: #2e8a6f; }
+  .item.Released { border-left-color: #3a6db5; }
+  .item.Rejected { border-left-color: var(--error); }
+  .item-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .item-type { font-weight: 600; }
+  .badge { font-size: .76rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+  .badge.Pending { background: var(--pending-bg); color: var(--pending-ink); }
+  .badge.Approved { background: var(--approved-bg); color: var(--approved-ink); }
+  .badge.Released { background: var(--released-bg); color: var(--released-ink); }
+  .badge.Rejected { background: var(--rejected-bg); color: var(--rejected-ink); }
+  .item p { margin: 4px 0 0; font-size: .86rem; color: var(--muted); }
+  .empty { color: var(--muted); text-align: center; padding: 28px 8px; border: 1.5px dashed var(--line); border-radius: 8px; }
+
+  @media (max-width: 860px) {
+    .auth-wrap { grid-template-columns: 1fr; }
+    .auth-side { padding: 28px 24px; border-right: 0; border-bottom: 6px solid var(--gold); gap: 20px; }
+    .auth-side h1 { font-size: 1.7rem; }
+    .portal { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .types, .row2 { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
-<div class="box">
-
-  <!-- LOGIN / REGISTER -->
-  <div id="authView">
-    <h1>Resident Portal</h1>
-    <p class="sub">Mag-register o mag-log in para makapag-request.</p>
-
-    <div class="tabs">
-      <button id="tabLogin" class="active" type="button">Log in</button>
-      <button id="tabRegister" type="button">Register</button>
+<!-- ================= LOGIN / REGISTER ================= -->
+<div id="authView" class="auth-wrap">
+  <aside class="auth-side">
+    <div>
+      <h1>Resident Portal</h1>
+      <p>Mag-request ng clearance o certificate, at mag-book ng appointment sa barangay nang hindi na pumipila.</p>
     </div>
+    <small>Barangay Resident Information System</small>
+  </aside>
 
-    <!-- Login -->
-    <div id="loginForm">
-      <label for="loginEmail">Email</label>
-      <input id="loginEmail" type="email" autocomplete="email">
-      <label for="loginPassword">Password</label>
-      <input id="loginPassword" type="password" autocomplete="current-password">
-      <button id="loginBtn" class="submit" type="button">Log in</button>
-      <p style="margin:12px 0 0"><button id="forgotBtn" class="link" type="button">Nakalimutan ang password?</button></p>
+  <main class="auth-main">
+    <div class="box">
+      <h2>Maligayang pagdating</h2>
+      <p class="sub">Mag-log in o gumawa ng account para magsimula.</p>
+
+      <div class="tabs">
+        <button id="tabLogin" class="active" type="button">Log in</button>
+        <button id="tabRegister" type="button">Register</button>
+      </div>
+
+      <div id="loginForm">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" autocomplete="email">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" autocomplete="current-password">
+        <button id="loginBtn" class="btn" type="button">Log in</button>
+        <p style="margin:12px 0 0"><button id="forgotBtn" class="link" type="button">Nakalimutan ang password?</button></p>
+      </div>
+
+      <div id="registerForm" class="hidden">
+        <div class="row2">
+          <div>
+            <label for="regFirst">First name</label>
+            <input id="regFirst" type="text" autocomplete="given-name">
+          </div>
+          <div>
+            <label for="regLast">Last name</label>
+            <input id="regLast" type="text" autocomplete="family-name">
+          </div>
+        </div>
+        <label for="regPhone">Mobile number</label>
+        <input id="regPhone" type="tel" autocomplete="tel" placeholder="09XXXXXXXXX">
+        <label for="regAddress">Address (House No. / Street)</label>
+        <input id="regAddress" type="text" autocomplete="street-address">
+        <label for="regEmail">Email</label>
+        <input id="regEmail" type="email" autocomplete="email">
+        <div class="row2">
+          <div>
+            <label for="regPassword">Password</label>
+            <input id="regPassword" type="password" autocomplete="new-password">
+          </div>
+          <div>
+            <label for="regPassword2">Ulitin ang password</label>
+            <input id="regPassword2" type="password" autocomplete="new-password">
+          </div>
+        </div>
+        <button id="registerBtn" class="btn" type="button">Create account</button>
+      </div>
+
+      <div id="msg" class="msg" role="status" aria-live="polite"></div>
     </div>
+  </main>
+</div>
 
-    <!-- Register -->
-    <div id="registerForm" class="hidden">
-      <label for="regFirst">First name</label>
-      <input id="regFirst" type="text" autocomplete="given-name">
-      <label for="regLast">Last name</label>
-      <input id="regLast" type="text" autocomplete="family-name">
-      <label for="regPhone">Mobile number</label>
-      <input id="regPhone" type="tel" autocomplete="tel" placeholder="09XXXXXXXXX">
-      <label for="regAddress">Address (House No. / Street)</label>
-      <input id="regAddress" type="text" autocomplete="street-address">
-      <label for="regEmail">Email</label>
-      <input id="regEmail" type="email" autocomplete="email">
-      <label for="regPassword">Password (6 o higit pang characters)</label>
-      <input id="regPassword" type="password" autocomplete="new-password">
-      <label for="regPassword2">Ulitin ang password</label>
-      <input id="regPassword2" type="password" autocomplete="new-password">
-      <button id="registerBtn" class="submit" type="button">Create account</button>
+<!-- ================= PORTAL (after login) ================= -->
+<div id="homeView" class="hidden">
+  <header class="topbar">
+    <div class="topbar-in">
+      <div>
+        <strong id="welcomeName">Welcome!</strong>
+        <span id="welcomeAddress"></span>
+      </div>
+      <button id="logoutBtn" class="btn ghost" type="button">Log out</button>
     </div>
+  </header>
 
-    <div id="msg" class="msg" role="status" aria-live="polite"></div>
+  <div class="portal">
+    <!-- Request form -->
+    <section class="panel">
+      <h3>Bagong request</h3>
+      <p class="sub">Piliin kung ano ang kailangan mo.</p>
+
+      <div class="types" role="radiogroup" aria-label="Uri ng request">
+        <label><input type="radio" name="reqType" value="Barangay Clearance" checked><span>Barangay Clearance<small>Para sa trabaho, negosyo, at iba pa</small></span></label>
+        <label><input type="radio" name="reqType" value="Certificate of Indigency"><span>Certificate of Indigency<small>Para sa tulong at scholarship</small></span></label>
+        <label><input type="radio" name="reqType" value="Certificate of Residency"><span>Certificate of Residency<small>Patunay ng tirahan</small></span></label>
+        <label><input type="radio" name="reqType" value="Appointment"><span>Appointment<small>Pumili ng petsa at oras</small></span></label>
+      </div>
+
+      <div id="apptFields" class="hidden">
+        <div class="row2">
+          <div>
+            <label for="apptDate">Petsa</label>
+            <input id="apptDate" type="date">
+          </div>
+          <div>
+            <label for="apptTime">Oras</label>
+            <select id="apptTime">
+              <option value="">Pumili ng oras</option>
+              <option>8:00 AM</option>
+              <option>9:00 AM</option>
+              <option>10:00 AM</option>
+              <option>11:00 AM</option>
+              <option>1:00 PM</option>
+              <option>2:00 PM</option>
+              <option>3:00 PM</option>
+              <option>4:00 PM</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <label for="reqPurpose" id="purposeLabel">Para saan ito?</label>
+      <textarea id="reqPurpose" placeholder="Halimbawa: Para sa job application"></textarea>
+
+      <button id="submitReqBtn" class="btn" type="button">Isumite ang request</button>
+      <div id="reqMsg" class="msg" role="status" aria-live="polite"></div>
+    </section>
+
+    <!-- My requests -->
+    <section class="panel">
+      <h3>Mga request ko</h3>
+      <p class="sub">Makikita dito ang status ng bawat request.</p>
+      <div id="myList" class="list"></div>
+    </section>
   </div>
-
-  <!-- AFTER LOGIN -->
-  <div id="homeView" class="hidden welcome">
-    <h1 id="welcomeName">Welcome!</h1>
-    <p class="sub">Naka-log in ka na.</p>
-    <p id="welcomeEmail"></p>
-    <p id="welcomeAddress"></p>
-    <button id="logoutBtn" class="submit" type="button">Log out</button>
-  </div>
-
 </div>
 
 <script type="module">
@@ -132,10 +312,11 @@
     signOut, onAuthStateChanged, sendPasswordResetEmail
   } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, getDoc, serverTimestamp
+    getFirestore, doc, setDoc, getDoc, addDoc, collection,
+    query, where, onSnapshot, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-   const firebaseConfig = {
+  const firebaseConfig = {
     apiKey: "AIzaSyBuGSvWeiQmgbG6vHt1QQou-c43c1t926g",
     authDomain: "barangay-system-83389.firebaseapp.com",
     projectId: "barangay-system-83389",
@@ -148,14 +329,15 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-
   const $ = (id) => document.getElementById(id);
-  const msg = $("msg");
+  let unsubscribeList = null;
 
-  function show(text, type) {
-    msg.textContent = text;
-    msg.className = "msg " + (type || "");
+  function setMsg(el, text, type) {
+    el.textContent = text;
+    el.className = "msg " + (type || "");
   }
+  const msg = $("msg");
+  const reqMsg = $("reqMsg");
 
   function friendlyError(err) {
     switch (err.code) {
@@ -167,24 +349,24 @@
       case "auth/user-not-found": return "Mali ang email o password.";
       case "auth/too-many-requests": return "Masyadong maraming subok. Subukan ulit mamaya.";
       case "auth/network-request-failed": return "Walang internet. I-check ang connection.";
-      case "permission-denied": return "Walang permission. I-check ang Firestore Security Rules.";
+      case "permission-denied": return "Walang permission. I-check ang Firestore Rules.";
       default: return "May error: " + (err.code || err.message);
     }
   }
 
-  // Tabs
+  /* ---------- Tabs ---------- */
   function showTab(which) {
     const isLogin = which === "login";
     $("loginForm").classList.toggle("hidden", !isLogin);
     $("registerForm").classList.toggle("hidden", isLogin);
     $("tabLogin").classList.toggle("active", isLogin);
     $("tabRegister").classList.toggle("active", !isLogin);
-    show("");
+    setMsg(msg, "");
   }
   $("tabLogin").addEventListener("click", () => showTab("login"));
   $("tabRegister").addEventListener("click", () => showTab("register"));
 
-  // Register
+  /* ---------- Register ---------- */
   $("registerBtn").addEventListener("click", async () => {
     const first = $("regFirst").value.trim();
     const last = $("regLast").value.trim();
@@ -195,16 +377,15 @@
     const pw2 = $("regPassword2").value;
 
     if (!first || !last || !phone || !address || !email || !pw) {
-      return show("Punan ang lahat ng fields.", "error");
+      return setMsg(msg, "Punan ang lahat ng fields.", "error");
     }
-    if (pw !== pw2) return show("Hindi magkapareho ang password.", "error");
+    if (pw !== pw2) return setMsg(msg, "Hindi magkapareho ang password.", "error");
 
     const btn = $("registerBtn");
     btn.disabled = true;
-    show("Ginagawa ang account...");
+    setMsg(msg, "Ginagawa ang account...");
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, pw);
-      // Ang role ay laging "resident" dito. Hindi dapat mapalitan ng user (tingnan ang Security Rules).
       await setDoc(doc(db, "users", cred.user.uid), {
         firstName: first,
         lastName: last,
@@ -214,71 +395,215 @@
         role: "resident",
         createdAt: serverTimestamp()
       });
-      show("Tagumpay! Naka-log in ka na.", "ok");
+      await loadProfile(cred.user);
+      setMsg(msg, "");
     } catch (err) {
-      show(friendlyError(err), "error");
+      setMsg(msg, friendlyError(err), "error");
     } finally {
       btn.disabled = false;
     }
   });
-
-  // Login
+/* ---------- Login ---------- */
   $("loginBtn").addEventListener("click", async () => {
     const email = $("loginEmail").value.trim();
     const pw = $("loginPassword").value;
-    if (!email || !pw) return show("Ilagay ang email at password.", "error");
+    if (!email || !pw) return setMsg(msg, "Ilagay ang email at password.", "error");
 
     const btn = $("loginBtn");
     btn.disabled = true;
-    show("Nilo-log in...");
+    setMsg(msg, "Nilo-log in...");
     try {
       await signInWithEmailAndPassword(auth, email, pw);
-      show("");
+      setMsg(msg, "");
     } catch (err) {
-      show(friendlyError(err), "error");
+      setMsg(msg, friendlyError(err), "error");
     } finally {
       btn.disabled = false;
     }
   });
 
-  // Forgot password
   $("forgotBtn").addEventListener("click", async () => {
     const email = $("loginEmail").value.trim();
-    if (!email) return show("Ilagay muna ang email, tapos pindutin ulit.", "error");
+    if (!email) return setMsg(msg, "Ilagay muna ang email, tapos pindutin ulit.", "error");
     try {
       await sendPasswordResetEmail(auth, email);
-      show("Nagpadala kami ng reset link sa email mo.", "ok");
+      setMsg(msg, "Nagpadala kami ng reset link sa email mo.", "ok");
     } catch (err) {
-      show(friendlyError(err), "error");
+      setMsg(msg, friendlyError(err), "error");
     }
   });
 
-  // Logout
   $("logoutBtn").addEventListener("click", () => signOut(auth));
 
-  // Auto-detect kung naka-log in
-  onAuthStateChanged(auth, async (user) => {
+  /* ---------- Request form ---------- */
+  function selectedType() {
+    return document.querySelector('input[name="reqType"]:checked').value;
+  }
+
+  function isoToday() {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().split("T")[0];
+  }
+
+  function refreshFormMode() {
+    const isAppt = selectedType() === "Appointment";
+    $("apptFields").classList.toggle("hidden", !isAppt);
+    $("purposeLabel").textContent = isAppt ? "Dahilan ng appointment" : "Para saan ito?";
+    $("reqPurpose").placeholder = isAppt
+      ? "Halimbawa: Magpapa-blotter, magpapakuha ng ID"
+      : "Halimbawa: Para sa job application";
+  }
+  document.querySelectorAll('input[name="reqType"]').forEach((r) => {
+    r.addEventListener("change", refreshFormMode);
+  });
+  $("apptDate").min = isoToday();
+
+  async function loadProfile(user) {
+    $("welcomeName").textContent = "Welcome!";
+    $("welcomeAddress").textContent = user.email || "";
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists()) {
+        const d = snap.data();
+        $("welcomeName").textContent = "Welcome, " + d.firstName + "!";
+        $("welcomeAddress").textContent = d.address || user.email || "";
+        return d;
+      }
+    } catch (err) {
+      // Hindi nabasa ang profile. Naka-log in pa rin.
+    }
+    return null;
+  }
+
+  $("submitReqBtn").addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const type = selectedType();
+    const purpose = $("reqPurpose").value.trim();
+    const date = $("apptDate").value;
+    const time = $("apptTime").value;
+
+    if (!purpose) return setMsg(reqMsg, "Isulat kung para saan ang request.", "error");
+
+    if (type === "Appointment") {
+      if (!date || !time) return setMsg(reqMsg, "Piliin ang petsa at oras.", "error");
+      if (date < isoToday()) return setMsg(reqMsg, "Hindi pwede ang petsang lumipas na.", "error");
+      const day = new Date(date + "T00:00:00").getDay();
+      if (day === 0 || day === 6) return setMsg(reqMsg, "Lunes hanggang Biyernes lang ang appointment.", "error");
+    }
+
+    const btn = $("submitReqBtn");
+    btn.disabled = true;
+    setMsg(reqMsg, "Isinusumite...");
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      const p = snap.exists() ? snap.data() : {};
+      await addDoc(collection(db, "requests"), {
+        uid: user.uid,
+        type: type,
+        purpose: purpose,
+        appointmentDate: type === "Appointment" ? date : "",
+        appointmentTime: type === "Appointment" ? time : "",
+        residentName: ((p.firstName || "") + " " + (p.lastName || "")).trim(),
+        phone: p.phone || "",
+        address: p.address || "",
+        email: user.email || "",
+        status: "Pending",
+        createdAt: serverTimestamp()
+      });
+      $("reqPurpose").value = "";
+      $("apptDate").value = "";
+      $("apptTime").value = "";
+      setMsg(reqMsg, "Naisumite na! Hintayin ang update sa listahan.", "ok");
+    } catch (err) {
+      setMsg(reqMsg, friendlyError(err), "error");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  /* ---------- My requests (live) ---------- */
+  function fmtDate(ts) {
+    if (!ts || !ts.toDate) return "";
+    return ts.toDate().toLocaleDateString("fil-PH", { year: "numeric", month: "short", day: "numeric" });
+  }
+
+  function renderList(docs) {
+    const list = $("myList");
+    list.textContent = "";
+    if (docs.length === 0) {
+      const e = document.createElement("div");
+      e.className = "empty";
+      e.textContent = "Wala ka pang request. Gumawa ng una sa kaliwa.";
+      list.appendChild(e);
+      return;
+    }
+    docs.forEach((r) => {
+      const status = r.status || "Pending";
+      const item = document.createElement("div");
+      item.className = "item " + status;
+
+      const top = document.createElement("div");
+      top.className = "item-top";
+      const t = document.createElement("div");
+      t.className = "item-type";
+      t.textContent = r.type;
+      const b = document.createElement("span");
+      b.className = "badge " + status;
+      b.textContent = status;
+      top.appendChild(t);
+      top.appendChild(b);
+      item.appendChild(top);
+
+      if (r.type === "Appointment" && r.appointmentDate) {
+        const a = document.createElement("p");
+        a.textContent = "Iskedyul: " + r.appointmentDate + ", " + r.appointmentTime;
+        item.appendChild(a);
+      }
+      const pr = document.createElement("p");
+      pr.textContent = r.purpose;
+      item.appendChild(pr);
+      const dt = document.createElement("p");
+      dt.textContent = "Isinumite: " + fmtDate(r.createdAt);
+      item.appendChild(dt);
+
+      list.appendChild(item);
+    });
+  }
+
+  function startList(uid) {
+    if (unsubscribeList) unsubscribeList();
+    const q = query(collection(db, "requests"), where("uid", "==", uid));
+    unsubscribeList = onSnapshot(q, (snap) => {
+      const rows = snap.docs.map((d) => d.data());
+      rows.sort((a, b) => {
+        const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : Date.now();
+        const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : Date.now();
+        return tb - ta;
+      });
+      renderList(rows);
+    }, () => {
+      $("myList").textContent = "Hindi nabasa ang listahan. I-check ang Firestore Rules.";
+    });
+  }
+
+  /* ---------- Auth state ---------- */
+  onAuthStateChanged(auth, (user) => {
     if (user) {
       $("authView").classList.add("hidden");
       $("homeView").classList.remove("hidden");
-      $("welcomeEmail").textContent = "Email: " + user.email;
-      $("welcomeName").textContent = "Welcome!";
-      $("welcomeAddress").textContent = "";
-      try {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists()) {
-          const d = snap.data();
-          $("welcomeName").textContent = "Welcome, " + d.firstName + "!";
-          $("welcomeAddress").textContent = "Address: " + d.address;
-        }
-      } catch (err) {
-        // Hindi nabasa ang profile. Naka-log in pa rin.
-      }
+      loadProfile(user);
+      startList(user.uid);
     } else {
+      if (unsubscribeList) { unsubscribeList(); unsubscribeList = null; }
       $("homeView").classList.add("hidden");
       $("authView").classList.remove("hidden");
     }
   });
+
+  refreshFormMode();
 </script>
 </body>
 </html>

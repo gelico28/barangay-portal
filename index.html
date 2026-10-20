@@ -71,6 +71,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .modal{position:fixed;inset:0;background:rgba(2,6,23,.6);display:flex;align-items:center;justify-content:center;padding:18px;z-index:50}
 .modal .card{max-width:420px;width:100%}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--brand);color:#fff;font-weight:600;padding:12px 20px;border-radius:12px;z-index:60;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:92vw}
+#vOut p{margin:4px 0;font-size:.9rem}
 @media(max-width:860px){#auth{grid-template-columns:1fr}.side{padding:26px 22px;gap:18px}.side h1{font-size:1.6rem;margin:12px 0 8px}.cols{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.tools{grid-template-columns:1fr}.staff .item{grid-template-columns:1fr}}
 @media(max-width:480px){.types,.r2{grid-template-columns:1fr}.top .btn.sec span{display:none}}
 </style>
@@ -113,6 +114,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
   </div>
   <div id="aMsg" class="msg" role="status" aria-live="polite"></div>
   <p class="sub" style="margin-top:18px">Staff and admin: use the account provided by your barangay. You will be taken to the Staff Panel automatically.</p>
+  <p class="sub"><button id="bVerOpen" class="link" type="button">Verify a certificate</button></p>
  </div></main>
 </div>
 
@@ -168,22 +170,46 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
   <div style="display:flex;gap:10px;margin-top:14px"><button id="dCancel" class="btn sec" type="button" style="flex:1;justify-content:center">Cancel</button><button id="dOk" class="btn danger" type="button" style="flex:1;margin:0">Delete forever</button></div>
  </div>
 </div>
+<div id="gate" class="formwrap hidden" style="min-height:100vh"><div class="box card" style="text-align:center">
+ <h2>Verify your email</h2>
+ <p class="sub">We sent a verification link to <b id="gMail"></b>. Open it, then come back and press the button below. Check your Spam folder if you do not see it.</p>
+ <button id="gDone" class="btn" type="button">I have verified my email</button>
+ <button id="gResend" class="btn sec" type="button" style="margin-top:10px;width:100%;justify-content:center">Resend email</button>
+ <div id="gMsg" class="msg" role="status"></div>
+ <p style="margin:10px 0 0"><button id="gOut" class="link" type="button">Log out</button></p>
+</div></div>
+<div id="mRej" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="rT"><div class="card">
+ <h2 id="rT">Reject this request?</h2>
+ <p class="sub">The reason below will be shown to the resident and included in the email.</p>
+ <label for="rReason">Reason for rejection</label><textarea id="rReason" placeholder="Example: The address provided does not match our records."></textarea>
+ <div id="rMsg" class="msg e" role="alert"></div>
+ <div style="display:flex;gap:10px;margin-top:14px"><button id="rCancel" class="btn sec" type="button" style="flex:1;justify-content:center">Cancel</button><button id="rOk" class="btn danger" type="button" style="flex:1;margin:0">Reject request</button></div>
+</div></div>
+<div id="mVer" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="vT"><div class="card">
+ <h2 id="vT">Verify a certificate</h2>
+ <p class="sub">Enter the reference number printed on the certificate, or scan its QR code.</p>
+ <label for="vRef">Reference number</label><input id="vRef" placeholder="BRY-XXXXXXXX">
+ <button id="vGo" class="btn" type="button">Verify</button>
+ <div id="vOut" style="margin-top:14px" aria-live="polite"></div>
+ <button id="vClose" class="btn sec" type="button" style="margin-top:14px;width:100%;justify-content:center">Close</button>
+</div></div>
 <div id="toast" class="toast hidden" role="status"></div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,reauthenticateWithCredential,EmailAuthProvider,deleteUser} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,sendEmailVerification,reauthenticateWithCredential,EmailAuthProvider,deleteUser} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,setDoc,getDoc,addDoc,updateDoc,collection,query,where,onSnapshot,getDocs,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/+esm";
+import qrcode from "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/+esm";
 
 const firebaseConfig={apiKey:"AIzaSyBuGSvWeiQmgbG6vHt1QQou-c43c1t926g",authDomain:"barangay-system-83389.firebaseapp.com",projectId:"barangay-system-83389",storageBucket:"barangay-system-83389.firebasestorage.app",messagingSenderId:"707377538631",appId:"1:707377538631:web:4fe59889fb0e91cec53362"};
 
 // ===== EmailJS: copy these values from your existing barangay-system.html and admin.html =====
-const EJ_KEY="tK6EZiFcBZ2cdw-IF", EJ_SERVICE="service_kd1iw66";
-const EJ_STAFF_TEMPLATE="template_mmcwzsb";     // email to staff on a new request (the template you already use)
-const EJ_RESIDENT_TEMPLATE="template_1twy2df";  // email to the resident on a status change
+const EJ_KEY="PALITAN_DITO", EJ_SERVICE="PALITAN_DITO";
+const EJ_STAFF_TEMPLATE="PALITAN_DITO";     // email to staff on a new request (the template you already use)
+const EJ_RESIDENT_TEMPLATE="PALITAN_DITO";  // email to the resident on a status change
 // ===== Certificate details =====
-const BRGY="Barangay (NAME)", CITY="(Teresa), (Rizal)", CAPTAIN="(Punong Barangay Name)";
+const BRGY="Barangay (NAME)", CITY="(City/Municipality), (Province)", CAPTAIN="(Punong Barangay Name)";
 
 const PORTAL=location.origin+location.pathname;
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
@@ -216,7 +242,7 @@ $("bReg").onclick=async()=>{const f=$("rFirst").value.trim(),l=$("rLast").value.
  const b=$("bReg");b.disabled=true;msg($("aMsg"),"Creating account...");registering=true;
  try{const c=await createUserWithEmailAndPassword(auth,e,p);
   await setDoc(doc(db,"users",c.user.uid),{firstName:f,lastName:l,phone:ph,address:ad,email:e,role:"resident",createdAt:serverTimestamp()});
-  registering=false;await route(c.user);msg($("aMsg"),"")}
+  try{await sendEmailVerification(c.user)}catch(e){}registering=false;await route(c.user);msg($("aMsg"),"")}
  catch(x){registering=false;msg($("aMsg"),err(x),"e")}finally{b.disabled=false}};
 $("bOut").onclick=()=>signOut(auth);
 
@@ -224,6 +250,8 @@ async function route(u){
  let p=null;try{const s=await getDoc(doc(db,"users",u.uid));p=s.exists()?s.data():null}catch(e){}
  if(!p){toast("Account profile not found.");await signOut(auth);return}
  role=(p.role==="admin"||p.role==="staff")?p.role:"resident";
+ if(role==="resident"&&!u.emailVerified){showGate(u);return}
+ $("gate").classList.add("hidden");
  const name=((p.firstName||"")+" "+(p.lastName||"")).trim()||u.email;
  $("wName").innerHTML=esc(name)+'<span class="chip">'+(role==="admin"?"Admin":role==="staff"?"Staff":"Resident")+"</span>";
  $("wSub").textContent=role==="resident"?(p.address||u.email):"Staff Panel";
@@ -234,13 +262,13 @@ async function route(u){
 }
 onAuthStateChanged(auth,u=>{
  if(registering)return;
- if(!u){if(unsub){unsub();unsub=null}$("app").classList.add("hidden");$("auth").classList.remove("hidden");return}
+ if(!u){if(unsub){unsub();unsub=null}$("app").classList.add("hidden");$("gate").classList.add("hidden");$("auth").classList.remove("hidden");return}
  route(u)});
 
 function resMsg(r,s){const t=r.type;
  if(s==="Approved")return t==="Appointment"?"We are pleased to inform you that your appointment request has been approved. You are scheduled on "+r.appointmentDate+" at "+r.appointmentTime+" at the barangay hall. Please arrive a few minutes early and bring a valid government-issued ID. If you are unable to attend, kindly submit a new request so that your slot may be offered to another resident.":"We are pleased to inform you that your request for a "+t+" has been approved and is now being processed. You will receive another email as soon as your document is ready. You will then be able to download it from the resident portal, and there is no need to visit the barangay hall.";
  if(s==="Released")return t==="Appointment"?"This is to confirm that your appointment has been marked as completed. Thank you for visiting the barangay hall. Should you need further assistance, you may submit a new request through the portal at any time.":"We are pleased to inform you that your "+t+" is now ready. To obtain your document, please log in to the resident portal at "+PORTAL+", open the My requests section, and select Download certificate. You may then save the document as a PDF or print it. There is no need to visit the barangay hall.";
- if(s==="Rejected")return"We regret to inform you that your request for a "+t+" could not be approved at this time. This may be due to incomplete or inaccurate information in your submission. For further details, please contact the barangay hall during office hours. You are welcome to submit a new request once the concern has been addressed.";return""}
+ if(s==="Rejected")return"We regret to inform you that your request for a "+t+" could not be approved at this time."+(r.rejectReason?" Reason provided by the barangay staff: "+r.rejectReason.replace(/[.\s]+$/,"")+".":"")+" For further details, please contact the barangay hall during office hours. You are welcome to submit a new request once the concern has been addressed.";return""}
 async function mail(tpl,params){if([EJ_KEY,EJ_SERVICE,tpl].includes("PALITAN_DITO"))return;try{await emailjs.send(EJ_SERVICE,tpl,params,{publicKey:EJ_KEY})}catch(e){console.error("EMAIL ERROR:",e&&(e.text||e.message||e))}}
 
 const sel=()=>document.querySelector('input[name=rt]:checked').value;
@@ -266,7 +294,7 @@ function listenMine(uid){if(unsub)unsub();
  unsub=onSnapshot(query(collection(db,"requests"),where("uid","==",uid)),s=>{
   const a=s.docs.map(d=>Object.assign({id:d.id},d.data())).sort((x,y)=>ms(y.createdAt)-ms(x.createdAt)),l=$("myList");byId={};a.forEach(r=>byId[r.id]=r);
   l.innerHTML=a.length?a.map(r=>{const st=r.status||"Pending";return'<div class="item '+st+'"><div><span class="badge s-'+st+'">'+st+"</span><h4>"+esc(r.type)+"</h4>"+
-   (r.type==="Appointment"&&r.appointmentDate?"<p><b>Schedule:</b> "+esc(r.appointmentDate)+", "+esc(r.appointmentTime)+"</p>":"")+"<p>"+esc(r.purpose)+"</p><p>Submitted "+esc(fd(r.createdAt))+"</p>"+(st==="Released"&&r.type!=="Appointment"?'<button class="pbtn" data-d="'+esc(r.id)+'" type="button"><svg class="i"><use href="#print"/></svg>Download certificate</button>':st==="Approved"&&r.type!=="Appointment"?"<p><b>Approved. Your certificate will appear here soon.</b></p>":"")+"</div></div>"}).join(""):'<div class="empty">No requests yet. Submit your first one on the left.</div>'},
+   (r.type==="Appointment"&&r.appointmentDate?"<p><b>Schedule:</b> "+esc(r.appointmentDate)+", "+esc(r.appointmentTime)+"</p>":"")+"<p>"+esc(r.purpose)+"</p><p>Submitted "+esc(fd(r.createdAt))+"</p>"+(st==="Rejected"&&r.rejectReason?"<p><b>Reason:</b> "+esc(r.rejectReason)+"</p>":"")+(st==="Released"&&r.type!=="Appointment"&&!r.refNo?"<p><b>Your certificate is being finalized.</b></p>":"")+(st==="Released"&&r.type!=="Appointment"&&r.refNo?'<button class="pbtn" data-d="'+esc(r.id)+'" type="button"><svg class="i"><use href="#print"/></svg>Download certificate</button>':st==="Approved"&&r.type!=="Appointment"?"<p><b>Approved. Your certificate will appear here soon.</b></p>":"")+"</div></div>"}).join(""):'<div class="empty">No requests yet. Submit your first one on the left.</div>'},
   ()=>{$("myList").innerHTML='<div class="empty">Could not load requests. Check your Firestore Rules.</div>'})}
 
 function render(){
@@ -279,17 +307,37 @@ function render(){
   (r.type==="Appointment"&&r.appointmentDate?"<p><b>Schedule:</b> "+esc(r.appointmentDate)+", "+esc(r.appointmentTime)+"</p>":"")+
   "<p><b>Purpose:</b> "+esc(r.purpose)+"</p><p><b>Phone:</b> "+esc(r.phone)+"</p><p><b>Address:</b> "+esc(r.address)+"</p><p><b>Email:</b> "+esc(r.email)+"</p><p>Submitted "+esc(fd(r.createdAt))+"</p></div>"+
   '<div><label style="margin-top:0">Update status</label><select data-id="'+esc(r.id)+'">'+STAT.map(s=>'<option'+(s===st?" selected":"")+">"+s+"</option>").join("")+"</select>"+
-  (r.type!=="Appointment"?'<button class="pbtn" data-p="'+esc(r.id)+'" type="button"><svg class="i"><use href="#print"/></svg>Print certificate</button>':"")+"</div></div>"}).join(""):
+  (r.type!=="Appointment"&&r.status==="Released"?'<button class="pbtn" data-p="'+esc(r.id)+'" type="button"><svg class="i"><use href="#print"/></svg>Print certificate</button>':"")+"</div></div>"}).join(""):
   '<div class="empty">'+(rows.length?"No requests match your filters.":"No requests yet.")+"</div>"}
 ["fQ","fS","fT"].forEach(i=>$(i).addEventListener(i==="fQ"?"input":"change",render));
-$("sList").addEventListener("change",async e=>{const s=e.target.closest("select[data-id]");if(!s)return;const r=byId[s.dataset.id];if(!r)return;const v=s.value;s.disabled=true;
- try{await updateDoc(doc(db,"requests",r.id),{status:v});toast("Status updated to "+v);
-  if(v!=="Pending"&&r.email)mail(EJ_RESIDENT_TEMPLATE,{to_email:r.email,resident_name:r.residentName||"Resident",request_type:r.type,status:v,message:resMsg(r,v),portal_link:PORTAL})}
- catch(x){toast("Could not update. Check your Firestore Rules.");s.value=r.status||"Pending"}finally{s.disabled=false}});
-$("sList").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(b&&byId[b.dataset.p])cert(byId[b.dataset.p])});
+const filling=new Set();
+function newRef(){const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",u=new Uint8Array(8);crypto.getRandomValues(u);return"BRY-"+Array.from(u,x=>a[x%a.length]).join("")}
+function mask(n){const p=String(n||"").trim().split(/\s+/);return p.length<2?p[0]||"":p[0]+" "+p[p.length-1].charAt(0)+"."}
+async function issueRef(r){const ref=r.refNo||newRef(),b=writeBatch(db);
+ b.update(doc(db,"requests",r.id),{status:"Released",refNo:ref,releasedAt:serverTimestamp()});
+ b.set(doc(db,"verifications",ref),{ref:ref,requestId:r.id,ownerUid:r.uid,type:r.type,nameMasked:mask(r.residentName),barangay:BRGY,issuedAt:serverTimestamp(),valid:true});
+ await b.commit();r.refNo=ref;return ref}
+async function setStatus(r,v,reason){
+ if(v==="Released"&&r.type!=="Appointment")await issueRef(r);
+ else{const d={status:v};if(v==="Rejected")d.rejectReason=reason;await updateDoc(doc(db,"requests",r.id),d)}
+ if(r.refNo&&r.status==="Released"&&v!=="Released"){try{await updateDoc(doc(db,"verifications",r.refNo),{valid:false})}catch(e){}}
+ toast("Status updated to "+v);
+ if(v!=="Pending"&&r.email){const x=Object.assign({},r,{rejectReason:reason||""});
+  mail(EJ_RESIDENT_TEMPLATE,{to_email:r.email,resident_name:r.residentName||"Resident",request_type:r.type,status:v,message:resMsg(x,v),rejection_reason:reason||"",portal_link:PORTAL})}}
+let pendRej=null;
+$("sList").addEventListener("change",async e=>{const s=e.target.closest("select[data-id]");if(!s)return;const r=byId[s.dataset.id];if(!r)return;const v=s.value;
+ if(v==="Rejected"){pendRej={r:r,s:s};$("rReason").value="";msg($("rMsg"),"","e");$("mRej").classList.remove("hidden");$("rReason").focus();return}
+ s.disabled=true;
+ try{await setStatus(r,v)}catch(x){toast("Could not update. Check your Firestore Rules.");s.value=r.status||"Pending"}finally{s.disabled=false}});
+$("rCancel").onclick=()=>{if(pendRej)pendRej.s.value=pendRej.r.status||"Pending";pendRej=null;$("mRej").classList.add("hidden")};
+$("rOk").onclick=async()=>{const t=$("rReason").value.trim();if(t.length<5)return msg($("rMsg"),"Please enter a reason (at least 5 characters).","e");
+ const r=pendRej.r,s=pendRej.s;$("rOk").disabled=true;
+ try{await setStatus(r,"Rejected",t);$("mRej").classList.add("hidden");pendRej=null}
+ catch(x){msg($("rMsg"),"Could not update. Check your Firestore Rules.","e");s.value=r.status||"Pending"}finally{$("rOk").disabled=false}};
+$("sList").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(!b)return;const r=byId[b.dataset.p];if(r&&r.refNo)cert(r);else toast("The certificate is being prepared. Try again in a moment.")});
 function listenAll(){if(unsub)unsub();
  unsub=onSnapshot(collection(db,"requests"),s=>{
-  rows=s.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>ms(b.createdAt)-ms(a.createdAt));byId={};rows.forEach(r=>byId[r.id]=r);
+  rows=s.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>ms(b.createdAt)-ms(a.createdAt));byId={};rows.forEach(r=>byId[r.id]=r);rows.forEach(r=>{if(r.status==="Released"&&r.type!=="Appointment"&&!r.refNo&&!filling.has(r.id)){filling.add(r.id);issueRef(r).catch(()=>filling.delete(r.id))}});
   if(!first){let n=0;s.docChanges().forEach(c=>{if(c.type==="added"&&!c.doc.metadata.hasPendingWrites){fresh.add(c.doc.id);n++}});if(n){toast(n===1?"New request received!":n+" new requests received!");beep()}}
   first=false;render()},()=>{$("sList").innerHTML='<div class="empty">Could not load requests. Check your Firestore Rules and your account role.</div>'})}
 
@@ -298,7 +346,10 @@ function cert(r){const n=esc(r.residentName),a=esc(r.address),p=esc(r.purpose);l
  else if(r.type==="Certificate of Indigency"){t="CERTIFICATE OF INDIGENCY";b="This is to certify that <b>"+n+"</b>, residing at "+a+", is a resident of this barangay and belongs to an indigent family in our community. This certificate is issued for the purpose of: <b>"+p+"</b>."}
  else{t="CERTIFICATE OF RESIDENCY";b="This is to certify that <b>"+n+"</b> is a bona fide resident of "+a+", within the jurisdiction of this barangay. This certificate is issued for the purpose of: <b>"+p+"</b>."}
  const d=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
- const h="<!DOCTYPE html><html><head><meta charset='UTF-8'><title>"+t+"</title><style>@page{size:A4;margin:20mm}body{font-family:'Times New Roman',serif;color:#000;line-height:1.7}.hd{text-align:center;border-bottom:3px double #000;padding-bottom:12px;margin-bottom:36px}.hd p{margin:0;font-size:14px}.hd h1{margin:4px 0;font-size:22px}h2{text-align:center;font-size:24px;letter-spacing:2px;margin:0 0 32px}.bd{text-align:justify;text-indent:48px;font-size:17px}.dt{margin-top:28px;font-size:17px}.sg{margin-top:90px;text-align:right}.sg span{display:inline-block;min-width:260px;border-top:1px solid #000;text-align:center;padding-top:4px;font-weight:bold}.sg small{display:block}</style></head><body><div class='hd'><p>Republic of the Philippines</p><p>"+esc(CITY)+"</p><h1>"+esc(BRGY)+"</h1><p>Office of the Punong Barangay</p></div><h2>"+t+"</h2><p class='bd'>"+b+"</p><p class='dt'>Ref. No.: "+esc((r.id||"").slice(0,8).toUpperCase())+"<br>Issued this "+d+" at "+esc(BRGY)+".</p><div class='sg'><span>"+esc(CAPTAIN)+"<small>Punong Barangay</small></span></div></body></html>";
+ const vu=PORTAL+"?verify="+encodeURIComponent(r.refNo||"");let qr="";
+ try{const q=qrcode(0,"M");q.addData(vu);q.make();qr=q.createSvgTag({cellSize:3,margin:0})}catch(e){}
+ const qrBlock="<div class='vf'>"+qr+"<p>Scan the QR code to verify this certificate, or visit<br>"+esc(PORTAL)+"<br>and enter Ref. No. <b>"+esc(r.refNo||"")+"</b></p></div>";
+ const h="<!DOCTYPE html><html><head><meta charset='UTF-8'><title>"+t+"</title><style>@page{size:A4;margin:20mm}body{font-family:'Times New Roman',serif;color:#000;line-height:1.7}.hd{text-align:center;border-bottom:3px double #000;padding-bottom:12px;margin-bottom:36px}.hd p{margin:0;font-size:14px}.hd h1{margin:4px 0;font-size:22px}h2{text-align:center;font-size:24px;letter-spacing:2px;margin:0 0 32px}.bd{text-align:justify;text-indent:48px;font-size:17px}.dt{margin-top:28px;font-size:17px}.sg{margin-top:90px;text-align:right}.sg span{display:inline-block;min-width:260px;border-top:1px solid #000;text-align:center;padding-top:4px;font-weight:bold}.sg small{display:block}.vf{display:flex;gap:14px;align-items:center;margin-top:36px;font-size:12px;border-top:1px solid #000;padding-top:10px}.vf svg{width:90px;height:90px}</style></head><body><div class='hd'><p>Republic of the Philippines</p><p>"+esc(CITY)+"</p><h1>"+esc(BRGY)+"</h1><p>Office of the Punong Barangay</p></div><h2>"+t+"</h2><p class='bd'>"+b+"</p><p class='dt'>Ref. No.: "+esc(r.refNo||"")+"<br>Issued this "+d+" at "+esc(BRGY)+".</p><div class='sg'><span>"+esc(CAPTAIN)+"<small>Punong Barangay</small></span></div>"+qrBlock+"</body></html>";
  const w=window.open("","_blank");if(!w){toast("Pop-up blocked. Please allow pop-ups.");return}
  w.document.open();w.document.write(h);w.document.close();w.focus();setTimeout(()=>w.print(),400)}
 
@@ -310,11 +361,29 @@ $("dOk").onclick=async()=>{const u=auth.currentUser,pw=$("dPw").value;if(!u)retu
   if(unsub){unsub();unsub=null}
   const q=await getDocs(query(collection(db,"requests"),where("uid","==",u.uid)));
   let bt=writeBatch(db),n=0;
-  for(const d of q.docs){bt.delete(d.ref);if(++n===400){await bt.commit();bt=writeBatch(db);n=0}}
+  for(const d of q.docs){bt.delete(d.ref);const rf=d.data().refNo;if(rf)bt.delete(doc(db,"verifications",rf));n+=2;if(n>=398){await bt.commit();bt=writeBatch(db);n=0}}
   bt.delete(doc(db,"users",u.uid));await bt.commit();
   await deleteUser(u);
   $("mDel").classList.add("hidden");toast("Your account has been deleted.")}
  catch(x){msg($("dMsg"),err(x),"e")}finally{b.disabled=false}};
+
+function showGate(u){if(unsub){unsub();unsub=null}$("auth").classList.add("hidden");$("app").classList.add("hidden");$("gMail").textContent=u.email;msg($("gMsg"),"");$("gate").classList.remove("hidden")}
+$("gResend").onclick=async()=>{try{await sendEmailVerification(auth.currentUser);msg($("gMsg"),"Verification email sent.","o")}catch(x){msg($("gMsg"),x.code==="auth/too-many-requests"?"Please wait a few minutes before requesting another email.":err(x),"e")}};
+$("gDone").onclick=async()=>{const u=auth.currentUser;if(!u)return;await u.reload();if(!u.emailVerified)return msg($("gMsg"),"Your email is not verified yet. Click the link in the email first.","e");await u.getIdToken(true);route(u)};
+$("gOut").onclick=()=>signOut(auth);
+
+async function verify(ref){const el=$("vOut");ref=(ref||"").trim().toUpperCase();if(!ref){el.innerHTML='<p class="sub">Enter a reference number.</p>';return}
+ el.innerHTML='<p class="sub">Checking...</p>';
+ try{const s=await getDoc(doc(db,"verifications",ref));
+  if(!s.exists()){el.innerHTML='<p><span class="badge s-Rejected">Not found</span></p><p class="sub">No certificate with this reference number exists in our records. It may be fake or mistyped.</p>';return}
+  const v=s.data();
+  el.innerHTML='<p><span class="badge '+(v.valid?"s-Approved":"s-Rejected")+'">'+(v.valid?"Valid":"Revoked")+"</span></p><p><b>Document:</b> "+esc(v.type)+"</p><p><b>Issued to:</b> "+esc(v.nameMasked)+"</p><p><b>Barangay:</b> "+esc(v.barangay)+"</p><p><b>Date issued:</b> "+esc(fd(v.issuedAt))+"</p><p><b>Ref. No.:</b> "+esc(v.ref)+'</p><p class="sub">Compare these details with the certificate you received.</p>'}
+ catch(e){el.innerHTML='<p class="sub">Could not check right now. Please try again.</p>'}}
+$("bVerOpen").onclick=()=>{$("vRef").value="";$("vOut").innerHTML="";$("mVer").classList.remove("hidden")};
+$("vGo").onclick=()=>verify($("vRef").value);
+$("vClose").onclick=()=>$("mVer").classList.add("hidden");
+const qp=new URLSearchParams(location.search).get("verify");
+if(qp){$("vRef").value=qp;$("mVer").classList.remove("hidden");verify(qp)}
 </script>
 </body>
 </html>

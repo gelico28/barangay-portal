@@ -185,6 +185,7 @@ const EJ_RESIDENT_TEMPLATE="template_1twy2df";  // email to the resident on a st
 // ===== Certificate details =====
 const BRGY="Barangay (NAME)", CITY="(Teresa), (Rizal)", CAPTAIN="(Punong Barangay Name)";
 
+const PORTAL=location.origin+location.pathname;
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id);
 const STAT=["Pending","Approved","Released","Rejected"];
@@ -236,9 +237,10 @@ onAuthStateChanged(auth,u=>{
  if(!u){if(unsub){unsub();unsub=null}$("app").classList.add("hidden");$("auth").classList.remove("hidden");return}
  route(u)});
 
-function resMsg(r,s){if(s==="Approved")return r.type==="Appointment"?"Your appointment on "+r.appointmentDate+" at "+r.appointmentTime+" has been approved. Please come to the barangay hall at that time.":"Your request has been approved. We will let you know when it is ready for pickup.";
- if(s==="Released")return"Your request is ready. You may pick it up at the barangay hall.";
- if(s==="Rejected")return"Your request was not approved. Please contact the barangay hall for details.";return""}
+function resMsg(r,s){const t=r.type;
+ if(s==="Approved")return t==="Appointment"?"We are pleased to inform you that your appointment request has been approved. You are scheduled on "+r.appointmentDate+" at "+r.appointmentTime+" at the barangay hall. Please arrive a few minutes early and bring a valid government-issued ID. If you are unable to attend, kindly submit a new request so that your slot may be offered to another resident.":"We are pleased to inform you that your request for a "+t+" has been approved and is now being processed. You will receive another email as soon as your document is ready. You will then be able to download it from the resident portal, and there is no need to visit the barangay hall.";
+ if(s==="Released")return t==="Appointment"?"This is to confirm that your appointment has been marked as completed. Thank you for visiting the barangay hall. Should you need further assistance, you may submit a new request through the portal at any time.":"We are pleased to inform you that your "+t+" is now ready. To obtain your document, please log in to the resident portal at "+PORTAL+", open the My requests section, and select Download certificate. You may then save the document as a PDF or print it. There is no need to visit the barangay hall.";
+ if(s==="Rejected")return"We regret to inform you that your request for a "+t+" could not be approved at this time. This may be due to incomplete or inaccurate information in your submission. For further details, please contact the barangay hall during office hours. You are welcome to submit a new request once the concern has been addressed.";return""}
 async function mail(tpl,params){if([EJ_KEY,EJ_SERVICE,tpl].includes("PALITAN_DITO"))return;try{await emailjs.send(EJ_SERVICE,tpl,params,{publicKey:EJ_KEY})}catch(e){console.error("EMAIL ERROR:",e&&(e.text||e.message||e))}}
 
 const sel=()=>document.querySelector('input[name=rt]:checked').value;
@@ -254,16 +256,17 @@ $("bSubmit").onclick=async()=>{const u=auth.currentUser;if(!u)return;const t=sel
  try{const s=await getDoc(doc(db,"users",u.uid)),p=s.exists()?s.data():{},nm=((p.firstName||"")+" "+(p.lastName||"")).trim();
   await addDoc(collection(db,"requests"),{uid:u.uid,type:t,purpose:pu,appointmentDate:t==="Appointment"?d:"",appointmentTime:t==="Appointment"?tm:"",residentName:nm,phone:p.phone||"",address:p.address||"",email:u.email||"",status:"Pending",createdAt:serverTimestamp()});
   mail(EJ_STAFF_TEMPLATE,{request_type:t,resident_name:nm,purpose:pu,schedule:t==="Appointment"?d+", "+tm:"None",phone:p.phone||"",address:p.address||"",resident_email:u.email||""});
-  $("rPurpose").value="";$("aDate").value="";$("aTime").value="";msg($("qMsg"),"Request submitted! Track it under My requests.","o")}
+  $("rPurpose").value="";$("aDate").value="";$("aTime").value="";msg($("qMsg"),t==="Appointment"?"Appointment request submitted! We will email you once it is confirmed.":"Request submitted! We will email you when it is approved. No need to visit the barangay hall.","o")}
  catch(x){msg($("qMsg"),err(x),"e")}finally{b.disabled=false}};
 
 const ms=t=>t&&t.toMillis?t.toMillis():Date.now();
 const fd=t=>t&&t.toDate?t.toDate().toLocaleString("en-US",{year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"";
+$("myList").addEventListener("click",e=>{const b=e.target.closest("button[data-d]");if(b&&byId[b.dataset.d])cert(byId[b.dataset.d])});
 function listenMine(uid){if(unsub)unsub();
  unsub=onSnapshot(query(collection(db,"requests"),where("uid","==",uid)),s=>{
-  const a=s.docs.map(d=>d.data()).sort((x,y)=>ms(y.createdAt)-ms(x.createdAt)),l=$("myList");
+  const a=s.docs.map(d=>Object.assign({id:d.id},d.data())).sort((x,y)=>ms(y.createdAt)-ms(x.createdAt)),l=$("myList");byId={};a.forEach(r=>byId[r.id]=r);
   l.innerHTML=a.length?a.map(r=>{const st=r.status||"Pending";return'<div class="item '+st+'"><div><span class="badge s-'+st+'">'+st+"</span><h4>"+esc(r.type)+"</h4>"+
-   (r.type==="Appointment"&&r.appointmentDate?"<p><b>Schedule:</b> "+esc(r.appointmentDate)+", "+esc(r.appointmentTime)+"</p>":"")+"<p>"+esc(r.purpose)+"</p><p>Submitted "+esc(fd(r.createdAt))+"</p></div></div>"}).join(""):'<div class="empty">No requests yet. Submit your first one on the left.</div>'},
+   (r.type==="Appointment"&&r.appointmentDate?"<p><b>Schedule:</b> "+esc(r.appointmentDate)+", "+esc(r.appointmentTime)+"</p>":"")+"<p>"+esc(r.purpose)+"</p><p>Submitted "+esc(fd(r.createdAt))+"</p>"+(st==="Released"&&r.type!=="Appointment"?'<button class="pbtn" data-d="'+esc(r.id)+'" type="button"><svg class="i"><use href="#print"/></svg>Download certificate</button>':st==="Approved"&&r.type!=="Appointment"?"<p><b>Approved. Your certificate will appear here soon.</b></p>":"")+"</div></div>"}).join(""):'<div class="empty">No requests yet. Submit your first one on the left.</div>'},
   ()=>{$("myList").innerHTML='<div class="empty">Could not load requests. Check your Firestore Rules.</div>'})}
 
 function render(){
@@ -281,7 +284,7 @@ function render(){
 ["fQ","fS","fT"].forEach(i=>$(i).addEventListener(i==="fQ"?"input":"change",render));
 $("sList").addEventListener("change",async e=>{const s=e.target.closest("select[data-id]");if(!s)return;const r=byId[s.dataset.id];if(!r)return;const v=s.value;s.disabled=true;
  try{await updateDoc(doc(db,"requests",r.id),{status:v});toast("Status updated to "+v);
-  if(v!=="Pending"&&r.email)mail(EJ_RESIDENT_TEMPLATE,{to_email:r.email,resident_name:r.residentName||"Resident",request_type:r.type,status:v,message:resMsg(r,v)})}
+  if(v!=="Pending"&&r.email)mail(EJ_RESIDENT_TEMPLATE,{to_email:r.email,resident_name:r.residentName||"Resident",request_type:r.type,status:v,message:resMsg(r,v),portal_link:PORTAL})}
  catch(x){toast("Could not update. Check your Firestore Rules.");s.value=r.status||"Pending"}finally{s.disabled=false}});
 $("sList").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(b&&byId[b.dataset.p])cert(byId[b.dataset.p])});
 function listenAll(){if(unsub)unsub();
@@ -295,7 +298,7 @@ function cert(r){const n=esc(r.residentName),a=esc(r.address),p=esc(r.purpose);l
  else if(r.type==="Certificate of Indigency"){t="CERTIFICATE OF INDIGENCY";b="This is to certify that <b>"+n+"</b>, residing at "+a+", is a resident of this barangay and belongs to an indigent family in our community. This certificate is issued for the purpose of: <b>"+p+"</b>."}
  else{t="CERTIFICATE OF RESIDENCY";b="This is to certify that <b>"+n+"</b> is a bona fide resident of "+a+", within the jurisdiction of this barangay. This certificate is issued for the purpose of: <b>"+p+"</b>."}
  const d=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
- const h="<!DOCTYPE html><html><head><meta charset='UTF-8'><title>"+t+"</title><style>@page{size:A4;margin:20mm}body{font-family:'Times New Roman',serif;color:#000;line-height:1.7}.hd{text-align:center;border-bottom:3px double #000;padding-bottom:12px;margin-bottom:36px}.hd p{margin:0;font-size:14px}.hd h1{margin:4px 0;font-size:22px}h2{text-align:center;font-size:24px;letter-spacing:2px;margin:0 0 32px}.bd{text-align:justify;text-indent:48px;font-size:17px}.dt{margin-top:28px;font-size:17px}.sg{margin-top:90px;text-align:right}.sg span{display:inline-block;min-width:260px;border-top:1px solid #000;text-align:center;padding-top:4px;font-weight:bold}.sg small{display:block}</style></head><body><div class='hd'><p>Republic of the Philippines</p><p>"+esc(CITY)+"</p><h1>"+esc(BRGY)+"</h1><p>Office of the Punong Barangay</p></div><h2>"+t+"</h2><p class='bd'>"+b+"</p><p class='dt'>Issued this "+d+" at "+esc(BRGY)+".</p><div class='sg'><span>"+esc(CAPTAIN)+"<small>Punong Barangay</small></span></div></body></html>";
+ const h="<!DOCTYPE html><html><head><meta charset='UTF-8'><title>"+t+"</title><style>@page{size:A4;margin:20mm}body{font-family:'Times New Roman',serif;color:#000;line-height:1.7}.hd{text-align:center;border-bottom:3px double #000;padding-bottom:12px;margin-bottom:36px}.hd p{margin:0;font-size:14px}.hd h1{margin:4px 0;font-size:22px}h2{text-align:center;font-size:24px;letter-spacing:2px;margin:0 0 32px}.bd{text-align:justify;text-indent:48px;font-size:17px}.dt{margin-top:28px;font-size:17px}.sg{margin-top:90px;text-align:right}.sg span{display:inline-block;min-width:260px;border-top:1px solid #000;text-align:center;padding-top:4px;font-weight:bold}.sg small{display:block}</style></head><body><div class='hd'><p>Republic of the Philippines</p><p>"+esc(CITY)+"</p><h1>"+esc(BRGY)+"</h1><p>Office of the Punong Barangay</p></div><h2>"+t+"</h2><p class='bd'>"+b+"</p><p class='dt'>Ref. No.: "+esc((r.id||"").slice(0,8).toUpperCase())+"<br>Issued this "+d+" at "+esc(BRGY)+".</p><div class='sg'><span>"+esc(CAPTAIN)+"<small>Punong Barangay</small></span></div></body></html>";
  const w=window.open("","_blank");if(!w){toast("Pop-up blocked. Please allow pop-ups.");return}
  w.document.open();w.document.write(h);w.document.close();w.focus();setTimeout(()=>w.print(),400)}
 

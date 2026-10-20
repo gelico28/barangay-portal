@@ -85,6 +85,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <symbol id="trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 11v6M14 11v6"/></symbol>
 <symbol id="print" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></symbol>
 <symbol id="send" viewBox="0 0 24 24"><path d="m22 2-11 11M22 2l-7 20-4-9-9-4z"/></symbol>
+<symbol id="uplus" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></symbol>
 </svg>
 
 <div id="auth">
@@ -110,6 +111,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
    <label for="rAddr">Address (House No. / Street)</label><input id="rAddr" autocomplete="street-address">
    <label for="rEmail">Email</label><input id="rEmail" type="email" autocomplete="email">
    <div class="r2"><div><label for="rPw">Password</label><input id="rPw" type="password" autocomplete="new-password"></div><div><label for="rPw2">Confirm password</label><input id="rPw2" type="password" autocomplete="new-password"></div></div>
+   <label style="display:flex;gap:10px;align-items:flex-start;text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--ink);font-weight:500;margin-top:14px"><input id="rConsent" type="checkbox" style="width:auto;margin-top:3px"><span>I have read and agree to the <button id="bPriv" class="link" type="button">Data Privacy Notice</button> and consent to the collection and processing of my personal information.</span></label>
    <button id="bReg" class="btn" type="button">Create account</button>
   </div>
   <div id="aMsg" class="msg" role="status" aria-live="polite"></div>
@@ -122,6 +124,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
  <header class="top"><div class="topin">
   <div class="logo"><svg class="i"><use href="#shield"/></svg></div>
   <div class="who"><b id="wName">Welcome</b><span id="wSub"></span></div>
+  <button id="bStaff" class="btn sec hidden" type="button"><svg class="i"><use href="#uplus"/></svg><span>Add staff</span></button>
   <button id="bTheme" class="btn sec" type="button" aria-label="Toggle dark mode"><svg class="i"><use id="themeUse" href="#moon"/></svg><span>Theme</span></button>
   <button id="bDel" class="btn sec" type="button"><svg class="i"><use href="#trash"/></svg><span>Delete account</span></button>
   <button id="bOut" class="btn sec" type="button"><svg class="i"><use href="#out"/></svg><span>Log out</span></button>
@@ -193,10 +196,30 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
  <div id="vOut" style="margin-top:14px" aria-live="polite"></div>
  <button id="vClose" class="btn sec" type="button" style="margin-top:14px;width:100%;justify-content:center">Close</button>
 </div></div>
+<div id="mPriv" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="pT"><div class="card" style="max-height:85vh;overflow:auto">
+ <h2 id="pT">Data Privacy Notice</h2>
+ <p class="sub">Barangay Resident Information System</p>
+ <p><b>What we collect.</b> Your name, address, mobile number, email address, and the details of the requests you submit.</p>
+ <p><b>Why we collect it.</b> To process your requests, issue certificates, schedule appointments, contact you about your requests, and allow others to verify that a certificate we issued is genuine.</p>
+ <p><b>Who can see it.</b> Only authorized staff of <span id="privB">the barangay</span>. The certificate verification page shows only the document type, a partially hidden name, the barangay, and the issue date.</p>
+ <p><b>Service providers.</b> Your data is stored and secured with Google Firebase, and notification emails are sent through EmailJS.</p>
+ <p><b>How long we keep it.</b> Until you delete your account, or as required by law. You can delete your account and your requests at any time using Delete account.</p>
+ <p><b>Your rights.</b> You may ask to access, correct, or delete your personal data, or object to its processing, by contacting the barangay hall.</p>
+ <button id="pClose" class="btn" type="button">Close</button>
+</div></div>
+<div id="mStaff" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="sT"><div class="card">
+ <h2 id="sT">Create staff account</h2>
+ <p class="sub">The new staff member will receive an email to set their own password.</p>
+ <div class="r2"><div><label for="sFirst">First name</label><input id="sFirst"></div><div><label for="sLast">Last name</label><input id="sLast"></div></div>
+ <label for="sEmail">Email</label><input id="sEmail" type="email">
+ <label for="sRole">Role</label><select id="sRole"><option value="staff">Staff</option><option value="admin">Admin</option></select>
+ <div id="sMsg" class="msg" role="status" aria-live="polite"></div>
+ <div style="display:flex;gap:10px;margin-top:14px"><button id="sCancel" class="btn sec" type="button" style="flex:1;justify-content:center">Close</button><button id="sOk" class="btn" type="button" style="flex:1;margin:0">Create account</button></div>
+</div></div>
 <div id="toast" class="toast hidden" role="status"></div>
 
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {initializeApp,deleteApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,sendEmailVerification,reauthenticateWithCredential,EmailAuthProvider,deleteUser} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import {getFirestore,doc,setDoc,getDoc,addDoc,updateDoc,collection,query,where,onSnapshot,getDocs,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4.4.1/+esm";
@@ -216,7 +239,7 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id);
 const STAT=["Pending","Approved","Released","Rejected"];
 const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-let unsub=null,registering=false,rows=[],byId={},first=true,fresh=new Set(),role="resident";
+let unsub=null,registering=false,rows=[],byId={},first=true,fresh=new Set(),role="resident",meName="";
 
 function setTheme(t){document.documentElement.setAttribute("data-theme",t);$("themeUse").setAttribute("href",t==="dark"?"#sun":"#moon");try{localStorage.setItem("brisTheme",t)}catch(e){}}
 let saved=null;try{saved=localStorage.getItem("brisTheme")}catch(e){}
@@ -239,9 +262,10 @@ $("bForgot").onclick=async()=>{const e=$("lEmail").value.trim();if(!e)return msg
 $("bReg").onclick=async()=>{const f=$("rFirst").value.trim(),l=$("rLast").value.trim(),ph=$("rPhone").value.trim(),ad=$("rAddr").value.trim(),e=$("rEmail").value.trim(),p=$("rPw").value;
  if(!f||!l||!ph||!ad||!e||!p)return msg($("aMsg"),"Please fill in all fields.","e");
  if(p!==$("rPw2").value)return msg($("aMsg"),"Passwords do not match.","e");
+ if(!$("rConsent").checked)return msg($("aMsg"),"Please agree to the Data Privacy Notice to create an account.","e");
  const b=$("bReg");b.disabled=true;msg($("aMsg"),"Creating account...");registering=true;
  try{const c=await createUserWithEmailAndPassword(auth,e,p);
-  await setDoc(doc(db,"users",c.user.uid),{firstName:f,lastName:l,phone:ph,address:ad,email:e,role:"resident",createdAt:serverTimestamp()});
+  await setDoc(doc(db,"users",c.user.uid),{firstName:f,lastName:l,phone:ph,address:ad,email:e,role:"resident",consent:true,consentVersion:"1.0",consentAt:serverTimestamp(),createdAt:serverTimestamp()});
   try{await sendEmailVerification(c.user)}catch(e){}registering=false;await route(c.user);msg($("aMsg"),"")}
  catch(x){registering=false;msg($("aMsg"),err(x),"e")}finally{b.disabled=false}};
 $("bOut").onclick=()=>signOut(auth);
@@ -252,12 +276,12 @@ async function route(u){
  role=(p.role==="admin"||p.role==="staff")?p.role:"resident";
  if(role==="resident"&&!u.emailVerified){showGate(u);return}
  $("gate").classList.add("hidden");
- const name=((p.firstName||"")+" "+(p.lastName||"")).trim()||u.email;
+ const name=((p.firstName||"")+" "+(p.lastName||"")).trim()||u.email;meName=name;
  $("wName").innerHTML=esc(name)+'<span class="chip">'+(role==="admin"?"Admin":role==="staff"?"Staff":"Resident")+"</span>";
  $("wSub").textContent=role==="resident"?(p.address||u.email):"Staff Panel";
  $("auth").classList.add("hidden");$("app").classList.remove("hidden");
  $("vRes").classList.toggle("hidden",role!=="resident");$("vStaff").classList.toggle("hidden",role==="resident");
- $("lPw").value="";first=true;fresh=new Set();
+ $("lPw").value="";first=true;fresh=new Set();$("bStaff").classList.toggle("hidden",role!=="admin");
  if(role==="resident")listenMine(u.uid);else listenAll();
 }
 onAuthStateChanged(auth,u=>{
@@ -305,21 +329,23 @@ function render(){
  $("sList").innerHTML=a.length?a.map(r=>{const st=r.status||"Pending";
   return'<div class="item '+st+(fresh.has(r.id)?" fresh":"")+'"><div><span class="badge s-'+st+'">'+st+"</span><h4>"+esc(r.type)+" - "+esc(r.residentName||"No name")+"</h4>"+
   (r.type==="Appointment"&&r.appointmentDate?"<p><b>Schedule:</b> "+esc(r.appointmentDate)+", "+esc(r.appointmentTime)+"</p>":"")+
-  "<p><b>Purpose:</b> "+esc(r.purpose)+"</p><p><b>Phone:</b> "+esc(r.phone)+"</p><p><b>Address:</b> "+esc(r.address)+"</p><p><b>Email:</b> "+esc(r.email)+"</p><p>Submitted "+esc(fd(r.createdAt))+"</p></div>"+
+  "<p><b>Purpose:</b> "+esc(r.purpose)+"</p><p><b>Phone:</b> "+esc(r.phone)+"</p><p><b>Address:</b> "+esc(r.address)+"</p><p><b>Email:</b> "+esc(r.email)+"</p><p>Submitted "+esc(fd(r.createdAt))+"</p>"+trail(r)+"</div>"+
   '<div><label style="margin-top:0">Update status</label><select data-id="'+esc(r.id)+'">'+STAT.map(s=>'<option'+(s===st?" selected":"")+">"+s+"</option>").join("")+"</select>"+
   (r.type!=="Appointment"&&r.status==="Released"?'<button class="pbtn" data-p="'+esc(r.id)+'" type="button"><svg class="i"><use href="#print"/></svg>Print certificate</button>':"")+"</div></div>"}).join(""):
   '<div class="empty">'+(rows.length?"No requests match your filters.":"No requests yet.")+"</div>"}
 ["fQ","fS","fT"].forEach(i=>$(i).addEventListener(i==="fQ"?"input":"change",render));
+function stamp(v){const o={lastUpdatedBy:meName,lastUpdatedByUid:auth.currentUser.uid,lastUpdatedAt:serverTimestamp()};if(v!=="Pending"){o[v.toLowerCase()+"By"]=meName;o[v.toLowerCase()+"At"]=serverTimestamp()}return o}
+function trail(r){return [["approved","Approved"],["released","Released"],["rejected","Rejected"]].map(a=>r[a[0]+"By"]?"<p><b>"+a[1]+" by:</b> "+esc(r[a[0]+"By"])+(r[a[0]+"At"]?" on "+esc(fd(r[a[0]+"At"])):"")+"</p>":"").join("")}
 const filling=new Set();
 function newRef(){const a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",u=new Uint8Array(8);crypto.getRandomValues(u);return"BRY-"+Array.from(u,x=>a[x%a.length]).join("")}
 function mask(n){const p=String(n||"").trim().split(/\s+/);return p.length<2?p[0]||"":p[0]+" "+p[p.length-1].charAt(0)+"."}
-async function issueRef(r){const ref=r.refNo||newRef(),b=writeBatch(db);
- b.update(doc(db,"requests",r.id),{status:"Released",refNo:ref,releasedAt:serverTimestamp()});
+async function issueRef(r,st){const ref=r.refNo||newRef(),b=writeBatch(db);
+ b.update(doc(db,"requests",r.id),Object.assign({status:"Released",refNo:ref},st?stamp("Released"):{}));
  b.set(doc(db,"verifications",ref),{ref:ref,requestId:r.id,ownerUid:r.uid,type:r.type,nameMasked:mask(r.residentName),barangay:BRGY,issuedAt:serverTimestamp(),valid:true});
  await b.commit();r.refNo=ref;return ref}
 async function setStatus(r,v,reason){
- if(v==="Released"&&r.type!=="Appointment")await issueRef(r);
- else{const d={status:v};if(v==="Rejected")d.rejectReason=reason;await updateDoc(doc(db,"requests",r.id),d)}
+ if(v==="Released"&&r.type!=="Appointment")await issueRef(r,true);
+ else{const d=Object.assign({status:v},stamp(v));if(v==="Rejected")d.rejectReason=reason;await updateDoc(doc(db,"requests",r.id),d)}
  if(r.refNo&&r.status==="Released"&&v!=="Released"){try{await updateDoc(doc(db,"verifications",r.refNo),{valid:false})}catch(e){}}
  toast("Status updated to "+v);
  if(v!=="Pending"&&r.email){const x=Object.assign({},r,{rejectReason:reason||""});
@@ -384,6 +410,23 @@ $("vGo").onclick=()=>verify($("vRef").value);
 $("vClose").onclick=()=>$("mVer").classList.add("hidden");
 const qp=new URLSearchParams(location.search).get("verify");
 if(qp){$("vRef").value=qp;$("mVer").classList.remove("hidden");verify(qp)}
+
+$("bPriv").onclick=()=>{$("privB").textContent=BRGY;$("mPriv").classList.remove("hidden")};
+$("pClose").onclick=()=>$("mPriv").classList.add("hidden");
+
+$("bStaff").onclick=()=>{["sFirst","sLast","sEmail"].forEach(i=>$(i).value="");msg($("sMsg"),"");$("mStaff").classList.remove("hidden")};
+$("sCancel").onclick=()=>$("mStaff").classList.add("hidden");
+$("sOk").onclick=async()=>{const f=$("sFirst").value.trim(),l=$("sLast").value.trim(),e=$("sEmail").value.trim(),rl=$("sRole").value;
+ if(role!=="admin")return;
+ if(!f||!l||!e)return msg($("sMsg"),"Please fill in all fields.","e");
+ const b=$("sOk");b.disabled=true;msg($("sMsg"),"Creating account...");let sapp=null;
+ try{sapp=initializeApp(firebaseConfig,"secondary-"+Date.now());const sa=getAuth(sapp);
+  const pw=Array.from(crypto.getRandomValues(new Uint8Array(20)),x=>x.toString(36)).join("").slice(0,24)+"Aa1!";
+  const c=await createUserWithEmailAndPassword(sa,e,pw);
+  await setDoc(doc(db,"users",c.user.uid),{firstName:f,lastName:l,phone:"",address:"",email:e,role:rl,createdBy:auth.currentUser.uid,createdAt:serverTimestamp()});
+  await sendPasswordResetEmail(sa,e);await signOut(sa);
+  msg($("sMsg"),"Account created. A password setup email was sent to "+e+".","o");["sFirst","sLast","sEmail"].forEach(i=>$(i).value="")}
+ catch(x){msg($("sMsg"),err(x),"e")}finally{b.disabled=false;if(sapp)deleteApp(sapp).catch(()=>{})}};
 </script>
 </body>
 </html>
